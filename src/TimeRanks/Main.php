@@ -22,15 +22,27 @@ class Main extends PluginBase implements Listener{
 			"firstgroup" => array(
 				"name" => "Newly Spawned",
 				"minute" => 0
+				"blocks" => array(
+					0,1,2,3,4,5,6,12,13,16,17,35,50,54,60,61,64
+                        		
+				)
 			)
 			"secondgroup" => array(
 				"name" => "Tree Puncher",
 				"minute" => 30
+				"blocks" => array(
+					0,1,2,3,4,5,6,12,13,16,17,35,50,60,61,64,245,43,44,53,54,67,134,135,136,139,157,158,163,164,173
+                        		
+				)
 			)
 			"thirdgroup" => array(
 				"name" => "Coal User",
 				"minute" => 60
-			)
+				"blocks" => array(
+					0,1,2,3,4,5,6,12,13,16,17,35,50,60,61,64,245,43,44,53,54,67,134,135,136,139,157,158,163,164,173
+                        		
+				)
+			)//TODO: add default block list
 			"fourthgroup" => array(
 				"name" => "Iron Miner",
 				"minute" => 180
@@ -48,6 +60,14 @@ class Main extends PluginBase implements Listener{
 				"minute" => 1440
 			)
 		);
+/*		$this->blocks = new Config($this->getDataFolder()."values.yml", Config::YAML,
+			"firstgroup" => array(
+                		"Content" => array(
+                    			array(
+                				11,
+                        			0,
+                        			7
+                    			)))*/
 		$this->times->save();
 		$this->values->save();
 		$this->getServer->getScheduler->scheduleRepeatingTask(new minuteSchedule($this), 72.000);
