@@ -152,24 +152,20 @@ class Main extends PluginBase implements Listener{
 	public function getBlockRank($blockID){
 		if(in_array($blockID, $this-values->get('firstgroup'['blocks']))){
 			$rank = $this->values->get('firstgroup'['name']);
-		}
-		if(in_array($blockID, $this-values->get('secondgroup'['blocks']))){
+		}elseif(in_array($blockID, $this-values->get('secondgroup'['blocks']))){
 			$rank = $this->values->get('secondgroup'['name']);
-		}
-		if(in_array($blockID, $this-values->get('thirdgroup'['blocks']))){
+		}elseif(in_array($blockID, $this-values->get('thirdgroup'['blocks']))){
 			$rank = $this->values->get('thirdgroup'['name']);
-		}
-		if(in_array($blockID, $this-values->get('fourthgroup'['blocks']))){
+		}elseif(in_array($blockID, $this-values->get('fourthgroup'['blocks']))){
 			$rank = $this->values->get('fourthgroup'['name']);
-		}
-		if(in_array($blockID, $this-values->get('fifthgroup'['blocks']))){
+		}elseif(in_array($blockID, $this-values->get('fifthgroup'['blocks']))){
 			$rank = $this->values->get('fifthgroup'['name']);
-		}
-		if(in_array($blockID, $this-values->get('sixthgroup'['blocks']))){
+		}elseif(in_array($blockID, $this-values->get('sixthgroup'['blocks']))){
 			$rank = $this->values->get('sixthgroup'['name']);
-		}
-		if(in_array($blockID, $this-values->get('seventhgroup'['blocks']))){
+		}elseif(in_array($blockID, $this-values->get('seventhgroup'['blocks']))){
 			$rank = $this->values->get('seventhgroup'['name']);
+		}else{
+			$rank = "Undefinied block rank";
 		}
 		return $rank;
 	}
@@ -177,24 +173,20 @@ class Main extends PluginBase implements Listener{
 	public function getLevelRank($level){
 		if(in_array($level, $this-values->get('firstgroup'['levels']))){
 			$rank = $this->values->get('firstgroup'['name']);
-		}
-		if(in_array($level, $this-values->get('secondgroup'['levels']))){
+		}elseif(in_array($level, $this-values->get('secondgroup'['levels']))){
 			$rank = $this->values->get('secondgroup'['name']);
-		}
-		if(in_array($level, $this-values->get('thirdgroup'['levels']))){
+		}elseif(in_array($level, $this-values->get('thirdgroup'['levels']))){
 			$rank = $this->values->get('thirdgroup'['name']);
-		}
-		if(in_array($level, $this-values->get('fourthgroup'['levels']))){
+		}elseif(in_array($level, $this-values->get('fourthgroup'['levels']))){
 			$rank = $this->values->get('fourthgroup'['name']);
-		}
-		if(in_array($level, $this-values->get('fifthgroup'['levels']))){
+		}elseif(in_array($level, $this-values->get('fifthgroup'['levels']))){
 			$rank = $this->values->get('fifthgroup'['name']);
-		}
-		if(in_array($level, $this-values->get('sixthgroup'['levels']))){
+		}elseif(in_array($level, $this-values->get('sixthgroup'['levels']))){
 			$rank = $this->values->get('sixthgroup'['name']);
-		}
-		if(in_array($level, $this-values->get('seventhgroup'['levels']))){
+		}elseif(in_array($level, $this-values->get('seventhgroup'['levels']))){
 			$rank = $this->values->get('seventhgroup'['name']);
+		}else{
+			$rank = "Undefinied level rank";
 		}
 		return $rank;
 	}
@@ -221,6 +213,8 @@ class Main extends PluginBase implements Listener{
 		}elseif($rank == "seventhrank" or $rank == $this->values->get('seventhrank'['name'])){
 			$minute = $this->values->get('seventhrank'['minutes']);
 			$this->times->set($player, array($minute));
+		}else{
+			return "This rank doesn't exist.";
 		}
 		return true;
 	}
@@ -230,22 +224,26 @@ class Main extends PluginBase implements Listener{
 			$params = array_shift($args[0]);
 			switch($params){
 			case "get":
-				if(!(isset $args[1])){
-					$group = $this->getRank($sender->getName());
+				if(!(isset($args[1]))){
+					$group = $this->getRankName($sender->getName());
 					$sender->sendMessage("You currently have the rank: ".$group);
 					return true;
 				}else{
 					$user = $args[1];
-					$group = $this->getRank($user);
+					$group = $this->getRankName($user);
 					$sender->sendMessage($user." has currently the rank: ".$group);
 					return true;
 				}
 			break;
-			case "set": 
-				$this->setRank($args[1], $args[2]);
-				$sender->sendMessage("Ranks Updated!");
-				return true;
-			break
+			case "set":
+				if(isset($args[1]) and isset($args[2])){
+					$this->setRank($args[1], $args[2]);
+					$sender->sendMessage("Ranks Updated!");
+					return true;
+				}else{
+					return false;
+				}
+			break;
 			}
 		}
 	}
