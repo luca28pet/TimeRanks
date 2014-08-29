@@ -125,6 +125,8 @@ class Main extends PluginBase implements Listener{
 			$rankname = $this->values->get('sixthgroup'['name']);
 		}elseif($minutes => $this->values->get('seventhgroup'['minute'])){
 			$rankname = $this->values->get('seventhgroup'['name']);
+		}else{
+			$rank = "Undefinied rank name";
 		}
 		return $rankname;
 	}
@@ -145,6 +147,8 @@ class Main extends PluginBase implements Listener{
 			$rank = 'sixthgroup';
 		}elseif($minutes => $this->values->get('seventhgroup'['minute'])){
 			$rank = 'seventhgroup';
+		}else{
+			$rank = "Undefinied rank";
 		}
 		return $rank;
 	}
