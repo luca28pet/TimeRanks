@@ -91,14 +91,14 @@ class Main extends PluginBase implements Listener{
 				"chat" => true
 			)
 		);
-/*		$this->blocks = new Config($this->getDataFolder()."values.yml", Config::YAML,
-			"firstgroup" => array(
-                		"Content" => array(
-                    			array(
-                				11,
-                        			0,
-                        			7
-                    			)))*/
+		$this->config = new Config($this->getDataFolder()."config.yml", Config::YAML,
+		"options" => array(
+				"disable-blocks-breaking" => false,
+				"disable-blocks-placing" => true,
+				"disable-joining-levels" => true,
+				"chat-fromat" => true
+			)
+		);
 		$this->times->save();
 		$this->values->save();
 		$this->getServer->getScheduler->scheduleRepeatingTask(new minuteSchedule($this), 72.000);
@@ -253,39 +253,63 @@ class Main extends PluginBase implements Listener{
 		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($player);
 		$ID = $event->getBlock()->getID();
-		if(in_array($ID, $this-values->get($playerrank['blocks']))){
-			$event->setCancelled(false);
-		}else{
-			$event->setCancelled();
-			$player->sendMessage("Your rank is too low to use this block.");
-			$player->sendMessage("You need rank: ".$this->getBlockRank($ID));
+		if($this->config->get('options'['disable-blocks-placing']) == true){
+			if(in_array($ID, $this-values->get($playerrank['blocks']))){
+				$event->setCancelled(false);
+			}else{
+				$event->setCancelled();
+				$player->sendMessage("Your rank is too low to use this block.");
+				$player->sendMessage("You need rank: ".$this->getBlockRank($ID));
+			}
+		}
+	}
+	
+	public function onBlockBreak(BlockBreakEvent $event){
+		$player = $event->getPlayer();
+		$playername = $event->getPlayer()->getName();
+		$playerrank = $this->getRank($player);
+		$ID = $event->getBlock()->getID();
+		if($this->config->get('options'['disable-blocks-breaking']) == true){
+			if(in_array($ID, $this-values->get($playerrank['blocks']))){
+				$event->setCancelled(false);
+			}else{
+				$event->setCancelled();
+				$player->sendMessage("Your rank is too low to use this block.");
+				$player->sendMessage("You need rank: ".$this->getBlockRank($ID));
+			}
 		}
 	}
 	
 	public function onLevelChange(EntityLevelChangeEvent $event){
-		$player = $event->getPlayer();
-		$playername = $event->getEntity->getName();
-		$playerrank = $this->getRank($player);
-		$target = $event->getTartget();
-		if(in_array($target, $this->values->get($playerrank['levels']))){
-			$event->setCancelled(false);
-		}else{
-			$event->setCancelled();
-			$player->sendMessage("Your rank is too low to join that world");
-			$player->sendMessage("You need rank: ".$this->getLevelRank($target));
+		if($this->config->get('options'['disable-joining-levels']) == true){
+			$player = $event->getPlayer();
+			$playername = $event->getEntity->getName();
+			$playerrank = $this->getRank($player);
+			$target = $event->getTartget();
+			if(in_array($target, $this->values->get($playerrank['levels']))){
+				$event->setCancelled(false);
+			}else{
+				$event->setCancelled();
+				$player->sendMessage("Your rank is too low to join that world");
+				$player->sendMessage("You need rank: ".$this->getLevelRank($target));
+			}
 		}
 	}
 	
 	public function onChat(PlayerChatEvent $event){
 		$player = $event->getPlayer();
 		$playername = $event->getPlayer()->getName();
-		$playerrank = $this->getRankName($playername);
-		$event->setFormat("[".$playerrank."]<".$playername.">: ".$event->getMessage());
-		if($this->values->get($playerrank) == false){
-			$event->setCancelled();
-			$player->sendMessage("You rank is too low to chat.");
+		$playerrank = $this->getRank($playername);
+		$playerrankname = $this->getRankName($playername);
+		if($this->config->get('options'['chat-format']) == true){
+			$event->setFormat("[".$playerrankname."]<".$playername.">: ".$event->getMessage);
 		}
-		
+		if($this->config->get('options'['disable-chat']) == true){
+			if($this->values->get($playerrank['chat']) == false){
+				$event->setCancelled();
+				$player->sendMessage("You rank is too low to chat.");
+			}
+		}
 	}
 }
  
