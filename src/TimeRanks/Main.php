@@ -236,12 +236,17 @@ class Main extends PluginBase implements Listener{
 				}
 			break;
 			case "set":
-				if(isset($args[1]) and isset($args[2])){
-					$this->setRank($args[1], $args[2]);
-					$sender->sendMessage("Ranks Updated!");
-					return true;
+				if($sender->isOP()){
+					if(isset($args[1]) and isset($args[2])){
+						$this->setRank($args[1], $args[2]);
+						$sender->sendMessage("Ranks Updated!");
+						return true;
+					}else{
+						return false;
+					}
 				}else{
-					return false;
+					$sender->sendMessage("You have not the permission to run this command");
+					return true;
 				}
 			break;
 			}
