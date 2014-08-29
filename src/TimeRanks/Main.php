@@ -16,6 +16,10 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\CommandExecutor;
 use pocketmine\event\Listener;
 
+public $times;
+public $values;
+public $config;
+
 class Main extends PluginBase implements Listener{
 	public function OnEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -223,6 +227,24 @@ class Main extends PluginBase implements Listener{
 		return true;
 	}
 	
+	public function getMinutesLeft($player){
+			$rank = $this->getRank($player);
+			if($rank == "firstrank"){
+				$minutes = $this->values->get('secondrank'['minute']) - $this->times($player[0])
+			}elseif($rank == "secondrank"){
+				$minutes = $this->values->get('thirdrank'['minute']) - $this->times($player[0])
+			}elseif($rank == "thirdrank"){
+				$minutes = $this->values->get('foruthrank'['minute']) - $this->times($player[0])
+			}elseif($rank == "fourthrank"){
+				$minutes = $this->values->get('fifthrank'['minute']) - $this->times($player[0])
+			}elseif($rank == "fifthrank"){
+				$minutes = $this->values->get('sixthrank'['minute']) - $this->times($player[0])
+			}elseif($rank == "sixthrank"){
+				$minutes = $this->values->get('seventhrank'['minute']) - $this->times($player[0])
+			}
+		return $minutes;
+	}
+	
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
 		if($command->getName() == "timeranks"){
 			$params = array_shift($args[0]);
@@ -231,11 +253,21 @@ class Main extends PluginBase implements Listener{
 				if(!(isset($args[1]))){
 					$group = $this->getRankName($sender->getName());
 					$sender->sendMessage("[TimeRanks] You currently have the rank: ".$group);
+					if($this->getRank($sender->getName) != "seventhrank"){
+						$sender->sendMessage("[TimeRanks] You have ".$this->getMinutesLeft($sender->getName)." minutes left untill you change the rank.");
+					}else{
+						$sender->sendMessage("[TimeRanks] You have the highest rank!");
+					}
 					return true;
 				}else{
 					$user = $args[1];
 					$group = $this->getRankName($user);
 					$sender->sendMessage("[TimeRanks] ".$user." has currently the rank: ".$group);
+					if($this->getRank($user) != "seventhrank"){
+						$sender->sendMessage("[TimeRanks] ".$user." has ".$this->getMinutesLeft($user)." minutes left untill he changes the rank.");
+					}else{
+						$sender->sendMessage("[TimeRanks] ".$user." has the highest rank!");
+					}
 					return true;
 				}
 			break;
