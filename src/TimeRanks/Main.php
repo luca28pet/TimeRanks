@@ -6,7 +6,10 @@ use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\PluginTask;
-use pocketmine\event\PlayerChatEvent;
+use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\utils\config;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
@@ -21,43 +24,64 @@ class Main extends PluginBase implements Listener{
 		$this->values = new Config($this->getDataFolder()."values.yml", Config::YAML,
 			"firstgroup" => array(
 				"name" => "Newly Spawned",
-				"minute" => 0
+				"minute" => 0,
 				"blocks" => array(
 					0,1,2,3,4,5,6,12,13,16,17,35,50,54,60,61,64
                         		
+				),
+				"levels" => array(
+					world, survival
 				)
-			)
+			),
 			"secondgroup" => array(
 				"name" => "Tree Puncher",
-				"minute" => 30
+				"minute" => 30,
 				"blocks" => array(
 					0,1,2,3,4,5,6,12,13,16,17,35,50,60,61,64,245,43,44,53,54,67,134,135,136,139,157,158,163,164,173
                         		
 				)
-			)
+				"levels" => array(
+					world, survival
+				)
+			),
 			"thirdgroup" => array(
 				"name" => "Coal User",
-				"minute" => 60
+				"minute" => 60,
 				"blocks" => array(
 					0,1,2,3,4,5,6,12,13,16,17,35,50,60,61,64,245,43,44,53,54,67,134,135,136,139,157,158,163,164,173
                         		
 				)
-			)//TODO: add default block list
+				"levels" => array(
+					world, survival
+				)
+			),//TODO: add default block list
 			"fourthgroup" => array(
 				"name" => "Iron Miner",
-				"minute" => 180
-			)
+				"minute" => 180,
+				"levels" => array(
+					world, survival
+				)
+			),
 			"fifthgroup" => array(
 				"name" => "Gold Player",
-				"minute" => 300
-			)
+				"minute" => 300,
+				"levels" => array(
+					world, survival
+				)
+			),
 			"sixthgroup" => array(
 				"name" => "Diamond User",
-				"minute" => 600
-			)
+				"minute" => 600,
+				"levels" => array(
+					world, survival
+				)
+			),
 			"seventhgroup" => array(
 				"name" => "Server Pro",
-				"minute" => 1440
+				"minute" => 1440,
+				"levels" => array(
+					world, survival
+				)
 			)
 		);
 /*		$this->blocks = new Config($this->getDataFolder()."values.yml", Config::YAML,
@@ -143,6 +167,31 @@ class Main extends PluginBase implements Listener{
 		return $rank;
 	}
 	
+	public function getLevelRank($level){
+		if(in_array($level, $this-values->get('firstgroup'['levels']))){
+			$rank = $this->values->get('firstgroup'['name']);
+		}
+		if(in_array($level, $this-values->get('secondgroup'['levels']))){
+			$rank = $this->values->get('secondgroup'['name']);
+		}
+		if(in_array($level, $this-values->get('thirdgroup'['levels']))){
+			$rank = $this->values->get('thirdgroup'['name']);
+		}
+		if(in_array($level, $this-values->get('fourthgroup'['levels']))){
+			$rank = $this->values->get('fourthgroup'['name']);
+		}
+		if(in_array($level, $this-values->get('fifthgroup'['levels']))){
+			$rank = $this->values->get('fifthgroup'['name']);
+		}
+		if(in_array($level, $this-values->get('sixthgroup'['levels']))){
+			$rank = $this->values->get('sixthgroup'['name']);
+		}
+		if(in_array($level, $this-values->get('seventhgroup'['levels']))){
+			$rank = $this->values->get('seventhgroup'['name']);
+		}
+		return $rank;
+	}
+	
 	public function setRank($player, $rank){
 		if($rank == "firstrank" or $rank == $this->values->get('firstrank'['name'])){
 			$minute = $this->values->get('firstrank'['minutes']);
@@ -171,7 +220,8 @@ class Main extends PluginBase implements Listener{
 	
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
 		if($command->getName() == "timeranks"){
-			switch(array_shift($args[0]){
+			$params = array_shift($args[0]);
+			switch($params){
 			case "get":
 				if(!(isset $args[1])){
 					$group = $this->getRank($sender->getName());
@@ -195,14 +245,29 @@ class Main extends PluginBase implements Listener{
 	
 	public function onBlockPlace(BlockPlaceEvent $event){
 		$player = $event->getPlayer();
+		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($player);
 		$ID = $event->getBlock()->getID();
-		if(in_array($ID, $this-values->get($rank['blocks']))){
+		if(in_array($ID, $this-values->get($playerrank['blocks']))){
 			$event->setCancelled(false);
 		}else{
 			$event->setCancelled();
 			$player->sendMessage("Your rank is too low to use this block.");
 			$player->sendMessage("You need rank: ".$this->getBlockRank($ID));
+		}
+	}
+	
+	public function onLevelChange(EntityLevelChangeEvent $event){
+		$player = $event->getPlayer();
+		$playername = $event->getEntity->getName();
+		$playerrank = $this->getRank($player);
+		$target = $event->getTartget();
+		if(in_array($target, $playerrank['levels'])){
+			$event->setCancelled(false);
+		}else{
+			$event->setCancelled();
+			$player->sendMessage("Your rank is too low to join that world");
+			$player->sendMessage("You need rank: ".$this->getLevelRank($target));
 		}
 	}
 }
