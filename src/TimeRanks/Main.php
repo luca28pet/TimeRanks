@@ -78,21 +78,66 @@ class Main extends PluginBase implements Listener{
 		$this->values->save();
 	}
 	
+	public function getRankName($playername){
+		$minutes = $this->times->get($playername[0]);
+		if($minutes => $this->values->get('firstgroup'['minute']) and $minutes < $this->values->get('secondgroup'['minute'])){
+			$rankname = $this->values->get('firstgroup'['name']);
+		}elseif($minutes => $this->values->get('secondgroup'['minute']) and $minutes < $this->values->get('thirdgroup'['minute'])){
+			$rankname = $this->values->get('secondgroup'['name']);
+		}elseif($minutes => $this->values->get('thirdgroup'['minute']) and $minutes < $this->values->get('fourthgroup'['minute'])){
+			$rankname = $this->values->get('thirdgroup'['name']);
+		}elseif($minutes => $this->values->get('fourthgroup'['minute']) and $minutes < $this->values->get('fifthgroup'['minute'])){
+			$rankname = $this->values->get('fourthgroup'['name']);
+		}elseif($minutes => $this->values->get('fifthgroup'['minute']) and $minutes < $this->values->get('sixthgroup'['minute'])){
+			$rankname = $this->values->get('fifthgroup'['name']);
+		}elseif($minutes => $this->values->get('sixthgroup'['minute']) and $minutes < $this->values->get('seventhgroup'['minute'])){
+			$rankname = $this->values->get('sixthgroup'['name']);
+		}elseif($minutes => $this->values->get('seventhgroup'['minute'])){
+			$rankname = $this->values->get('seventhgroup'['name']);
+		}
+		return $rankname;
+	}
+	
 	public function getRank($playername){
 		$minutes = $this->times->get($playername[0]);
 		if($minutes => $this->values->get('firstgroup'['minute']) and $minutes < $this->values->get('secondgroup'['minute'])){
-			$rank = $this->values->get('firstgroup'['name']);
+			$rank = 'firstgroup';
 		}elseif($minutes => $this->values->get('secondgroup'['minute']) and $minutes < $this->values->get('thirdgroup'['minute'])){
-			$rank = $this->values->get('secondgroup'['name']);
+			$rank = 'secondgroup';
 		}elseif($minutes => $this->values->get('thirdgroup'['minute']) and $minutes < $this->values->get('fourthgroup'['minute'])){
-			$rank = $this->values->get('thirdgroup'['name']);
+			$rank = 'thirdgroup';
 		}elseif($minutes => $this->values->get('fourthgroup'['minute']) and $minutes < $this->values->get('fifthgroup'['minute'])){
-			$rank = $this->values->get('fourthgroup'['name']);
+			$rank = 'fourthgroup';
 		}elseif($minutes => $this->values->get('fifthgroup'['minute']) and $minutes < $this->values->get('sixthgroup'['minute'])){
-			$rank = $this->values->get('fifthgroup'['name']);
+			$rank = 'fifthgroup';
 		}elseif($minutes => $this->values->get('sixthgroup'['minute']) and $minutes < $this->values->get('seventhgroup'['minute'])){
-			$rank = $this->values->get('sixthgroup'['name']);
+			$rank = 'sixthgroup';
 		}elseif($minutes => $this->values->get('seventhgroup'['minute'])){
+			$rank = 'seventhgroup';
+		}
+		return $rank;
+	}
+	
+	public function getBlockRank($blockID){
+		if(in_array($blockID, $this-values->get('firstgroup'['blocks']))){
+			$rank = $this->values->get('firstgroup'['name']);
+		}
+		if(in_array($blockID, $this-values->get('secondgroup'['blocks']))){
+			$rank = $this->values->get('secondgroup'['name']);
+		}
+		if(in_array($blockID, $this-values->get('thirdgroup'['blocks']))){
+			$rank = $this->values->get('thirdgroup'['name']);
+		}
+		if(in_array($blockID, $this-values->get('fourthgroup'['blocks']))){
+			$rank = $this->values->get('fourthgroup'['name']);
+		}
+		if(in_array($blockID, $this-values->get('fifthgroup'['blocks']))){
+			$rank = $this->values->get('fifthgroup'['name']);
+		}
+		if(in_array($blockID, $this-values->get('sixthgroup'['blocks']))){
+			$rank = $this->values->get('sixthgroup'['name']);
+		}
+		if(in_array($blockID, $this-values->get('seventhgroup'['blocks']))){
 			$rank = $this->values->get('seventhgroup'['name']);
 		}
 		return $rank;
@@ -145,6 +190,19 @@ class Main extends PluginBase implements Listener{
 				return true;
 			break
 			}
+		}
+	}
+	
+	public function onBlockPlace(BlockPlaceEvent $event){
+		$player = $event->getPlayer();
+		$playerrank = $this->getRank($player);
+		$ID = $event->getBlock()->getID();
+		if(in_array($ID, $this-values->get($rank['blocks']))){
+			$event->setCancelled(false);
+		}else{
+			$event->setCancelled();
+			$player->sendMessage("Your rank is too low to use this block.");
+			$player->sendMessage("You need rank: ".$this->getBlockRank($ID));
 		}
 	}
 }
