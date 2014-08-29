@@ -31,7 +31,8 @@ class Main extends PluginBase implements Listener{
 				),
 				"levels" => array(
 					world, survival
-				)
+				),
+				"chat" => true
 			),
 			"secondgroup" => array(
 				"name" => "Tree Puncher",
@@ -42,7 +43,8 @@ class Main extends PluginBase implements Listener{
 				)
 				"levels" => array(
 					world, survival
-				)
+				),
+				"chat" => true
 			),
 			"thirdgroup" => array(
 				"name" => "Coal User",
@@ -53,35 +55,40 @@ class Main extends PluginBase implements Listener{
 				)
 				"levels" => array(
 					world, survival
-				)
+				),
+				"chat" => true
 			),//TODO: add default block list
 			"fourthgroup" => array(
 				"name" => "Iron Miner",
 				"minute" => 180,
 				"levels" => array(
 					world, survival
-				)
+				),
+				"chat" => true
 			),
 			"fifthgroup" => array(
 				"name" => "Gold Player",
 				"minute" => 300,
 				"levels" => array(
 					world, survival
-				)
+				),
+				"chat" => true
 			),
 			"sixthgroup" => array(
 				"name" => "Diamond User",
 				"minute" => 600,
 				"levels" => array(
 					world, survival
-				)
+				),
+				"chat" => true
 			),
 			"seventhgroup" => array(
 				"name" => "Server Pro",
 				"minute" => 1440,
 				"levels" => array(
 					world, survival
-				)
+				),
+				"chat" => true
 			)
 		);
 /*		$this->blocks = new Config($this->getDataFolder()."values.yml", Config::YAML,
@@ -262,13 +269,25 @@ class Main extends PluginBase implements Listener{
 		$playername = $event->getEntity->getName();
 		$playerrank = $this->getRank($player);
 		$target = $event->getTartget();
-		if(in_array($target, $playerrank['levels'])){
+		if(in_array($target, $this->values->get($playerrank['levels']))){
 			$event->setCancelled(false);
 		}else{
 			$event->setCancelled();
 			$player->sendMessage("Your rank is too low to join that world");
 			$player->sendMessage("You need rank: ".$this->getLevelRank($target));
 		}
+	}
+	
+	public function onChat(PlayerChatEvent $event){
+		$player = $event->getPlayer();
+		$playername = $event->getPlayer()->getName();
+		$playerrank = $this->getRankName($playername);
+		$event->setFormat("[".$playerrank."]<".$playername.">: ".$event->getMessage());
+		if($this->values->get($playerrank) == false){
+			$event->setCancelled();
+			$player->sendMessage("You rank is too low to chat.");
+		}
+		
 	}
 }
  
