@@ -126,7 +126,7 @@ class Main extends PluginBase implements Listener{
 		}elseif($minutes => $this->values->get('seventhgroup'['minute'])){
 			$rankname = $this->values->get('seventhgroup'['name']);
 		}else{
-			$rank = "Undefinied rank name";
+			$rankname = "Undefinied rank name";
 		}
 		return $rankname;
 	}
@@ -230,12 +230,12 @@ class Main extends PluginBase implements Listener{
 			case "get":
 				if(!(isset($args[1]))){
 					$group = $this->getRankName($sender->getName());
-					$sender->sendMessage("You currently have the rank: ".$group);
+					$sender->sendMessage("[TimeRanks] You currently have the rank: ".$group);
 					return true;
 				}else{
 					$user = $args[1];
 					$group = $this->getRankName($user);
-					$sender->sendMessage($user." has currently the rank: ".$group);
+					$sender->sendMessage("[TimeRanks] ".$user." has currently the rank: ".$group);
 					return true;
 				}
 			break;
@@ -243,7 +243,7 @@ class Main extends PluginBase implements Listener{
 				if($sender->isOP()){
 					if(isset($args[1]) and isset($args[2])){
 						$this->setRank($args[1], $args[2]);
-						$sender->sendMessage("Ranks Updated!");
+						$sender->sendMessage("[TimeRanks] Ranks Updated!");
 						return true;
 					}else{
 						return false;
@@ -267,8 +267,8 @@ class Main extends PluginBase implements Listener{
 				$event->setCancelled(false);
 			}else{
 				$event->setCancelled();
-				$player->sendMessage("Your rank is too low to use this block.");
-				$player->sendMessage("You need rank: ".$this->getBlockRank($ID));
+				$player->sendMessage("[TimeRanks] Your rank is too low to use this block.");
+				$player->sendMessage("[TimeRanks] You need rank: ".$this->getBlockRank($ID));
 			}
 		}
 	}
@@ -283,8 +283,8 @@ class Main extends PluginBase implements Listener{
 				$event->setCancelled(false);
 			}else{
 				$event->setCancelled();
-				$player->sendMessage("Your rank is too low to use this block.");
-				$player->sendMessage("You need rank: ".$this->getBlockRank($ID));
+				$player->sendMessage("[TimeRanks] Your rank is too low to use this block.");
+				$player->sendMessage("[TimeRanks] You need rank: ".$this->getBlockRank($ID));
 			}
 		}
 	}
@@ -299,8 +299,8 @@ class Main extends PluginBase implements Listener{
 				$event->setCancelled(false);
 			}else{
 				$event->setCancelled();
-				$player->sendMessage("Your rank is too low to join that world");
-				$player->sendMessage("You need rank: ".$this->getLevelRank($target));
+				$player->sendMessage("[TimeRanks] Your rank is too low to join that world");
+				$player->sendMessage("[TimeRanks] You need rank: ".$this->getLevelRank($target));
 			}
 		}
 	}
@@ -316,13 +316,13 @@ class Main extends PluginBase implements Listener{
 		if($this->config->get('options'['disable-chat']) == true){
 			if($this->values->get($playerrank['chat']) == false){
 				$event->setCancelled();
-				$player->sendMessage("You rank is too low to chat.");
+				$player->sendMessage("[TimeRanks] You rank is too low to chat.");
 			}
 		}
 	}
 }
  
-class minuteSchedule extends PluginTask{
+class minuteSchedule extends PluginTask{ //TODO: put htis in another file minuteSchedule.php
 	public function __construct(Main $plugin){
 		$this->api = $server;
     }
