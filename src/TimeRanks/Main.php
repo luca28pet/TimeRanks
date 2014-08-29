@@ -111,14 +111,19 @@ class Main extends PluginBase implements Listener{
 				if(!(isset $args[1])){
 					$group = $this->getRank($sender->getName());
 					$sender->sendMessage("You currently have the rank: ".$group);
+					return true;
 				}else{
 					$user = $args[1];
 					$group = $this->getRank($user);
 					$sender->sendMessage($user." has currently the rank: ".$group);
+					return true;
 				}
+			break;
 			case "set": 
 				$this->setRank($args[1], $args[2]);
 				$sender->sendMessage("Ranks Updated!");
+				return true;
+			break
 			}
 		}
 	}
