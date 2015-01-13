@@ -26,73 +26,75 @@ public $prefs;
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		@mkdir($this->getDataFolder());
 		$this->times = new Config($this->getDataFolder()."times.yml", Config::YAML);
-		$this->values = new Config($this->getDataFolder()."values.yml", Config::YAML,
-			"firstgroup" => array(
-				"name" => "Newly Spawned",
-				"minute" => 0,
-				"blocks" => array(),
-				"levels" => array(
-					world, survival
+		$this->values = new Config($this->getDataFolder()."values.yml", Config::YAML, 
+			array(
+				"firstgroup" => array(
+					"name" => "Newly Spawned",
+					"minute" => 0,
+					"blocks" => array(),
+					"levels" => array(
+						world, survival
+					),
+					"chat" => true
 				),
-				"chat" => true
-			),
-			"secondgroup" => array(
-				"name" => "Tree Puncher",
-				"minute" => 30,
-				"blocks" => array(),
-				"levels" => array(
-					world, survival
+				"secondgroup" => array(
+					"name" => "Tree Puncher",
+					"minute" => 30,
+					"blocks" => array(),
+					"levels" => array(
+						world, survival
+					),
+					"chat" => true
 				),
-				"chat" => true
-			),
-			"thirdgroup" => array(
-				"name" => "Coal User",
-				"minute" => 60,
-				"blocks" => array(),
-				"levels" => array(
-					world, survival
+				"thirdgroup" => array(
+					"name" => "Coal User",
+					"minute" => 60,
+					"blocks" => array(),
+					"levels" => array(
+						world, survival
+					),
+					"chat" => true
 				),
-				"chat" => true
-			),//TODO: add default block list
-			"fourthgroup" => array(
-				"name" => "Iron Miner",
-				"minute" => 180,
-				"blocks" => array(),
-				"levels" => array(
-					world, survival
+				"fourthgroup" => array(
+					"name" => "Iron Miner",
+					"minute" => 180,
+					"blocks" => array(),
+					"levels" => array(
+						world, survival
+					),
+					"chat" => true
 				),
-				"chat" => true
-			),
-			"fifthgroup" => array(
-				"name" => "Gold Player",
-				"minute" => 300,
-				"blocks" => array(),
-				"levels" => array(
-					world, survival
+				"fifthgroup" => array(
+					"name" => "Gold Player",
+					"minute" => 300,
+					"blocks" => array(),
+					"levels" => array(
+						world, survival
+					),
+					"chat" => true
 				),
-				"chat" => true
-			),
-			"sixthgroup" => array(
-				"name" => "Diamond User",
-				"minute" => 600,
-				"blocks" => array(),
-				"levels" => array(
-					world, survival
+				"sixthgroup" => array(
+					"name" => "Diamond User",
+					"minute" => 600,
+					"blocks" => array(),
+					"levels" => array(
+						world, survival
+					),
+					"chat" => true
 				),
-				"chat" => true
-			),
-			"seventhgroup" => array(
-				"name" => "Server Pro",
-				"minute" => 1440,
-				"blocks" => array(),
-				"levels" => array(
-					world, survival
-				),
-				"chat" => true
+				"seventhgroup" => array(
+					"name" => "Server Pro",
+					"minute" => 1440,
+					"blocks" => array(),
+					"levels" => array(
+						world, survival
+					),
+					"chat" => true
+				)
 			)
 		);
-		$this->prefs = new Config($this->getDataFolder()."config.yml", Config::YAML,
-		"options" => array(
+		$this->prefs = new Config($this->getDataFolder()."preferences.yml", Config::YAML,
+			array(
 				"disable-blocks-breaking" => false,
 				"disable-blocks-placing" => false,
 				"disable-joining-levels" => false,
@@ -287,7 +289,7 @@ public $prefs;
 		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($player);
 		$ID = $event->getBlock()->getID();
-		if($this->prefs->get('options'['disable-blocks-placing']) == true){
+		if($this->prefs->get("disable-blocks-placing") == true){
 			if(in_array($ID, $this-values->get($playerrank['blocks']))){
 				$event->setCancelled(false);
 			}else{
@@ -303,7 +305,7 @@ public $prefs;
 		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($player);
 		$ID = $event->getBlock()->getID();
-		if($this->prefs->get('options'['disable-blocks-breaking']) == true){
+		if($this->prefs->get("disable-blocks-breaking") == true){
 			if(in_array($ID, $this-values->get($playerrank['blocks']))){
 				$event->setCancelled(false);
 			}else{
@@ -316,7 +318,7 @@ public $prefs;
 	
 	public function onLevelChange(EntityLevelChangeEvent $event){
 		if($event->getEntity instanceof Player){
-			if($this->prefs->get('options'['disable-joining-levels']) == true){
+			if($this->prefs->get("disable-joining-levels") == true){
 				$player = $event->getEntity();
 				$playername = $event->getEntity->getName();
 				$playerrank = $this->getRank($player);
@@ -337,10 +339,10 @@ public $prefs;
 		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($playername);
 		$playerrankname = $this->getRankName($playername);
-		if($this->prefs->get('options'['chat-format']) == true){
+		if($this->prefs->get("chat-format") == true){
 			$event->setFormat("[".$playerrankname."]<".$playername.">: ".$event->getMessage);
 		}
-		if($this->prefs->get('options'['disable-chat']) == true){
+		if($this->prefs->get("disable-chat") == true){
 			if($this->values->get($playerrank['chat']) == false){
 				$event->setCancelled();
 				$player->sendMessage("[TimeRanks] You rank is too low to chat.");
