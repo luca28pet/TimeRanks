@@ -30,10 +30,7 @@ public $config;
 			"firstgroup" => array(
 				"name" => "Newly Spawned",
 				"minute" => 0,
-				"blocks" => array(
-					0,1,2,3,4,5,6,12,13,16,17,35,50,54,60,61,64
-                        		
-				),
+				"blocks" => array(),
 				"levels" => array(
 					world, survival
 				),
@@ -42,10 +39,7 @@ public $config;
 			"secondgroup" => array(
 				"name" => "Tree Puncher",
 				"minute" => 30,
-				"blocks" => array(
-					0,1,2,3,4,5,6,12,13,16,17,35,50,60,61,64,245,43,44,53,54,67,134,135,136,139,157,158,163,164,173
-                        		
-				)
+				"blocks" => array(),
 				"levels" => array(
 					world, survival
 				),
@@ -54,10 +48,7 @@ public $config;
 			"thirdgroup" => array(
 				"name" => "Coal User",
 				"minute" => 60,
-				"blocks" => array(
-					0,1,2,3,4,5,6,12,13,16,17,35,50,60,61,64,245,43,44,53,54,67,134,135,136,139,157,158,163,164,173
-                        		
-				)
+				"blocks" => array(),
 				"levels" => array(
 					world, survival
 				),
@@ -66,6 +57,7 @@ public $config;
 			"fourthgroup" => array(
 				"name" => "Iron Miner",
 				"minute" => 180,
+				"blocks" => array(),
 				"levels" => array(
 					world, survival
 				),
@@ -74,6 +66,7 @@ public $config;
 			"fifthgroup" => array(
 				"name" => "Gold Player",
 				"minute" => 300,
+				"blocks" => array(),
 				"levels" => array(
 					world, survival
 				),
@@ -82,6 +75,7 @@ public $config;
 			"sixthgroup" => array(
 				"name" => "Diamond User",
 				"minute" => 600,
+				"blocks" => array(),
 				"levels" => array(
 					world, survival
 				),
@@ -90,6 +84,7 @@ public $config;
 			"seventhgroup" => array(
 				"name" => "Server Pro",
 				"minute" => 1440,
+				"blocks" => array(),
 				"levels" => array(
 					world, survival
 				),
@@ -99,9 +94,9 @@ public $config;
 		$this->config = new Config($this->getDataFolder()."config.yml", Config::YAML,
 		"options" => array(
 				"disable-blocks-breaking" => false,
-				"disable-blocks-placing" => true,
-				"disable-joining-levels" => true,
-				"chat-fromat" => true
+				"disable-blocks-placing" => false,
+				"disable-joining-levels" => false,
+				"chat-fromat" => false
 			)
 		);
 		$this->times->save();
