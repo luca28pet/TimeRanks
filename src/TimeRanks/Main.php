@@ -353,19 +353,3 @@ class Main extends PluginBase implements Listener{
 		}
 	}
 }
- 
-class minuteSchedule extends PluginTask{ //TODO: put htis in another file minuteSchedule.php
-	public function __construct(Main $plugin){
-		$this->api = $server;
-    }
-	public function onRun($currentTick){
-		foreach($this->getServer()->getOnlinePlayers() as $p){
-			if(!($this->times->exists($p))){
-				$this->times->set($p, array(1));
-			}else{
-				$currentminute = $this->times->get($p[0]) + 1;
-				$this->times->set($p, array($currentminute));
-			}
-		}
-	}
-}
