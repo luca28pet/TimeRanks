@@ -16,11 +16,12 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\CommandExecutor;
 use pocketmine\event\Listener;
 
+class Main extends PluginBase implements Listener{
+
 public $times;
 public $values;
 public $config;
 
-class Main extends PluginBase implements Listener{
 	public function OnEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 		@mkdir($this->getDataFolder());
@@ -115,19 +116,19 @@ class Main extends PluginBase implements Listener{
 	
 	public function getRankName($playername){
 		$minutes = $this->times->get($playername[0]);
-		if($minutes => $this->values->get('firstgroup'['minute']) and $minutes < $this->values->get('secondgroup'['minute'])){
+		if($minutes >= $this->values->get('firstgroup'['minute']) and $minutes < $this->values->get('secondgroup'['minute'])){
 			$rankname = $this->values->get('firstgroup'['name']);
-		}elseif($minutes => $this->values->get('secondgroup'['minute']) and $minutes < $this->values->get('thirdgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('secondgroup'['minute']) and $minutes < $this->values->get('thirdgroup'['minute'])){
 			$rankname = $this->values->get('secondgroup'['name']);
-		}elseif($minutes => $this->values->get('thirdgroup'['minute']) and $minutes < $this->values->get('fourthgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('thirdgroup'['minute']) and $minutes < $this->values->get('fourthgroup'['minute'])){
 			$rankname = $this->values->get('thirdgroup'['name']);
-		}elseif($minutes => $this->values->get('fourthgroup'['minute']) and $minutes < $this->values->get('fifthgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('fourthgroup'['minute']) and $minutes < $this->values->get('fifthgroup'['minute'])){
 			$rankname = $this->values->get('fourthgroup'['name']);
-		}elseif($minutes => $this->values->get('fifthgroup'['minute']) and $minutes < $this->values->get('sixthgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('fifthgroup'['minute']) and $minutes < $this->values->get('sixthgroup'['minute'])){
 			$rankname = $this->values->get('fifthgroup'['name']);
-		}elseif($minutes => $this->values->get('sixthgroup'['minute']) and $minutes < $this->values->get('seventhgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('sixthgroup'['minute']) and $minutes < $this->values->get('seventhgroup'['minute'])){
 			$rankname = $this->values->get('sixthgroup'['name']);
-		}elseif($minutes => $this->values->get('seventhgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('seventhgroup'['minute'])){
 			$rankname = $this->values->get('seventhgroup'['name']);
 		}else{
 			$rankname = "Undefinied rank name";
@@ -137,19 +138,19 @@ class Main extends PluginBase implements Listener{
 	
 	public function getRank($playername){
 		$minutes = $this->times->get($playername[0]);
-		if($minutes => $this->values->get('firstgroup'['minute']) and $minutes < $this->values->get('secondgroup'['minute'])){
+		if($minutes >= $this->values->get('firstgroup'['minute']) and $minutes < $this->values->get('secondgroup'['minute'])){
 			$rank = 'firstgroup';
-		}elseif($minutes => $this->values->get('secondgroup'['minute']) and $minutes < $this->values->get('thirdgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('secondgroup'['minute']) and $minutes < $this->values->get('thirdgroup'['minute'])){
 			$rank = 'secondgroup';
-		}elseif($minutes => $this->values->get('thirdgroup'['minute']) and $minutes < $this->values->get('fourthgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('thirdgroup'['minute']) and $minutes < $this->values->get('fourthgroup'['minute'])){
 			$rank = 'thirdgroup';
-		}elseif($minutes => $this->values->get('fourthgroup'['minute']) and $minutes < $this->values->get('fifthgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('fourthgroup'['minute']) and $minutes < $this->values->get('fifthgroup'['minute'])){
 			$rank = 'fourthgroup';
-		}elseif($minutes => $this->values->get('fifthgroup'['minute']) and $minutes < $this->values->get('sixthgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('fifthgroup'['minute']) and $minutes < $this->values->get('sixthgroup'['minute'])){
 			$rank = 'fifthgroup';
-		}elseif($minutes => $this->values->get('sixthgroup'['minute']) and $minutes < $this->values->get('seventhgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('sixthgroup'['minute']) and $minutes < $this->values->get('seventhgroup'['minute'])){
 			$rank = 'sixthgroup';
-		}elseif($minutes => $this->values->get('seventhgroup'['minute'])){
+		}elseif($minutes >= $this->values->get('seventhgroup'['minute'])){
 			$rank = 'seventhgroup';
 		}else{
 			$rank = "Undefinied rank";
@@ -322,17 +323,19 @@ class Main extends PluginBase implements Listener{
 	}
 	
 	public function onLevelChange(EntityLevelChangeEvent $event){
-		if($this->config->get('options'['disable-joining-levels']) == true){
-			$player = $event->getPlayer();
-			$playername = $event->getEntity->getName();
-			$playerrank = $this->getRank($player);
-			$target = $event->getTartget();
-			if(in_array($target, $this->values->get($playerrank['levels']))){
-				$event->setCancelled(false);
-			}else{
-				$event->setCancelled();
-				$player->sendMessage("[TimeRanks] Your rank is too low to join that world");
-				$player->sendMessage("[TimeRanks] You need rank: ".$this->getLevelRank($target));
+		if($event->getEntity instanceof Player){
+			if($this->config->get('options'['disable-joining-levels']) == true){
+				$player = $event->getEntity();
+				$playername = $event->getEntity->getName();
+				$playerrank = $this->getRank($player);
+				$target = $event->getTartget()->getName();
+				if(in_array($target, $this->values->get($playerrank['levels']))){
+					$event->setCancelled(false);
+				}else{
+					$event->setCancelled();
+					$player->sendMessage("[TimeRanks] Your rank is too low to join that world");
+					$player->sendMessage("[TimeRanks] You need rank: ".$this->getLevelRank($target));
+				}
 			}
 		}
 	}
