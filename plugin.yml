@@ -14,6 +14,6 @@ commands:
   aliases: [tr, ranks, tranks]
   permission: timeranks.command
 permissions:
- advancedkits.command:
+ timeranks.command:
   description: "Allows to use the main command"
   default: true
