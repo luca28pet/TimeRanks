@@ -20,7 +20,7 @@ class Main extends PluginBase implements Listener{
 
 public $times;
 public $values;
-public $config;
+public $prefs;
 
 	public function OnEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -91,7 +91,7 @@ public $config;
 				"chat" => true
 			)
 		);
-		$this->config = new Config($this->getDataFolder()."config.yml", Config::YAML,
+		$this->prefs = new Config($this->getDataFolder()."config.yml", Config::YAML,
 		"options" => array(
 				"disable-blocks-breaking" => false,
 				"disable-blocks-placing" => false,
@@ -99,14 +99,11 @@ public $config;
 				"chat-fromat" => false
 			)
 		);
-		$this->times->save();
-		$this->values->save();
 		$this->getServer->getScheduler->scheduleRepeatingTask(new minuteSchedule($this), 72.000);
 	}
 	
 	public function OnDisable(){
-		$this->times->save();
-		$this->values->save();
+		
 	}
 	
 	public function getRankName($playername){
@@ -290,7 +287,7 @@ public $config;
 		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($player);
 		$ID = $event->getBlock()->getID();
-		if($this->config->get('options'['disable-blocks-placing']) == true){
+		if($this->prefs->get('options'['disable-blocks-placing']) == true){
 			if(in_array($ID, $this-values->get($playerrank['blocks']))){
 				$event->setCancelled(false);
 			}else{
@@ -306,7 +303,7 @@ public $config;
 		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($player);
 		$ID = $event->getBlock()->getID();
-		if($this->config->get('options'['disable-blocks-breaking']) == true){
+		if($this->prefs->get('options'['disable-blocks-breaking']) == true){
 			if(in_array($ID, $this-values->get($playerrank['blocks']))){
 				$event->setCancelled(false);
 			}else{
@@ -319,7 +316,7 @@ public $config;
 	
 	public function onLevelChange(EntityLevelChangeEvent $event){
 		if($event->getEntity instanceof Player){
-			if($this->config->get('options'['disable-joining-levels']) == true){
+			if($this->prefs->get('options'['disable-joining-levels']) == true){
 				$player = $event->getEntity();
 				$playername = $event->getEntity->getName();
 				$playerrank = $this->getRank($player);
@@ -340,10 +337,10 @@ public $config;
 		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($playername);
 		$playerrankname = $this->getRankName($playername);
-		if($this->config->get('options'['chat-format']) == true){
+		if($this->prefs->get('options'['chat-format']) == true){
 			$event->setFormat("[".$playerrankname."]<".$playername.">: ".$event->getMessage);
 		}
-		if($this->config->get('options'['disable-chat']) == true){
+		if($this->prefs->get('options'['disable-chat']) == true){
 			if($this->values->get($playerrank['chat']) == false){
 				$event->setCancelled();
 				$player->sendMessage("[TimeRanks] You rank is too low to chat.");
