@@ -15,11 +15,12 @@ class minuteSchedule extends PluginTask{
 
 	public function onRun($currentTick){
 		foreach($this->plugin->getServer()->getOnlinePlayers() as $p){
-	  		if(!($this->plugin->times->exists($p))){
-				$this->plugin->times->set($p, array(1));
+			$pn = $p->getName();
+	  		if(!($this->plugin->times->exists($pn))){
+				$this->plugin->times->set($pn, array(1));
 			}else{
-				$currentminute = $this->plugin->times->get($p[0]) + 1;
-				$this->plugin->times->set($p, array($currentminute));
+				$currentminute = $this->plugin->times->get($pn[0]) + 1;
+				$this->plugin->times->set($pn, array($currentminute));
 			}
 		}
 	}
