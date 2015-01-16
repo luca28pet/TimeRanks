@@ -9,17 +9,21 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
-use pocketmine\utils\config;
+use pocketmine\utils\Config;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\CommandExecutor;
 use pocketmine\event\Listener;
+use pocketmine\utils\TextFormat;
 
 class Main extends PluginBase implements Listener{
 	
 public $times;
 public $values;
 public $prefs;
+public $timerankseconomy;
+private $economys;
+private $pockemoney;
 
 	public function OnEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -33,7 +37,8 @@ public $prefs;
 					"levels" => array(
 						world, survival
 					),
-					"chat" => true
+					"chat" => true,
+					"cost" => 100
 				),
 				"TreePuncher" => array(
 					"minute" => 30,
@@ -41,7 +46,8 @@ public $prefs;
 					"levels" => array(
 						world, survival
 					),
-					"chat" => true
+					"chat" => true,
+					"cost" => 200
 				),
 				"CoalUser" => array(
 					"minute" => 60,
@@ -49,7 +55,8 @@ public $prefs;
 					"levels" => array(
 						world, survival
 					),
-					"chat" => true
+					"chat" => true,
+					"cost" => 300
 				),
 				"IronMiner" => array(
 					"minute" => 180,
@@ -57,7 +64,8 @@ public $prefs;
 					"levels" => array(
 						world, survival
 					),
-					"chat" => true
+					"chat" => true,
+					"cost" => 400
 				),
 				"GoldPlayer" => array(
 					"minute" => 300,
@@ -65,7 +73,8 @@ public $prefs;
 					"levels" => array(
 						world, survival
 					),
-					"chat" => true
+					"chat" => true,
+					"cost" => 500
 				),
 				"DiamondUser" => array(
 					"minute" => 600,
@@ -73,7 +82,8 @@ public $prefs;
 					"levels" => array(
 						world, survival
 					),
-					"chat" => true
+					"chat" => true,
+					"cost" => 600
 				),
 				"ServerPro" => array(
 					"minute" => 1440,
@@ -81,7 +91,8 @@ public $prefs;
 					"levels" => array(
 						world, survival
 					),
-					"chat" => true
+					"chat" => true,
+					"cost" => 700
 				)
 			)
 		);
@@ -90,10 +101,38 @@ public $prefs;
 				"disable-blocks-breaking" => false,
 				"disable-blocks-placing" => false,
 				"disable-joining-levels" => false,
-				"chat-fromat" => false
+				"chat-fromat" => false,
+				"enable-economy" => false,
+				"preferred-economy" => "economys"
 			)
 		);
 		$this->getServer->getScheduler()->scheduleRepeatingTask(new minuteSchedule($this), 1200);
+		
+		if($this->prefs->get("enable-economy") == true){
+			if($this->prefs->get("preferred-economy") == "economys"){
+				if($this->getServer()->getPluginManager()->getPlugin("EconomyAPI") instanceof Plugin){
+            				$this->economys = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
+            				$this->getLogger()->info("TimeRanks loaded with EconomyS by onebone");
+            				$this->timerankseconomy == "EconomyS";
+				}else{
+					$this->timerankseconomy == false;
+				}
+			}elseif($this->prefs->get("preferred-economy") == "pocketmoney"){
+				if($this->getServer()->getPluginManager()->getPlugin("PocketMoney") instanceof Plugin){
+					$this->pocketmoney = $this->getServer()->getPluginManager()->getPlugin("PocketMoney");
+					$this->getLogger()->info("TimeRanks loaded with PocketMoney by MinecrafterJPN");
+					$this->timerankseconomy == "PocketMoney";
+				}else{
+					$this->timerankseconomy == false;
+				}
+			}else{
+				$this->getLogger()->info(TextFormat::RED."You need to specify a economy plugin in preferences.yml or disable enable-economy");
+				$this->getLogger()->info(TextFormat::RED."TimeRanks DID NOT load any economy plugin.");
+				$this->timerankseconomy == false;
+			}
+		}else{
+			$this->timerankseconomy == false;
+		}
 	}
 	
 	public function OnDisable(){
@@ -226,6 +265,32 @@ public $prefs;
 		return $minutes;
 	}
 	
+	public function getNextRank($playername){
+		
+		$rank = $this->getRank($playername);
+		$higherranks = array();
+		$ranks = $this->values->get('ranks');
+		$min = $this->times->get($playername[0]);
+		
+		foreach($ranks as $r){
+			$rankminute = $r['minute'];
+			if($rankminute > $min){
+				array_push($higherranks, $rankminute);
+			}
+		}
+		
+		sort($higherranks);
+		$nextrankminute = array_shift($higherranks);
+		
+		foreach($ranks as $r){
+			if($r['minute'] == $nextrankminute){
+				$nextrank = $r;
+			}
+		}
+		
+		return $nextrank;
+	}
+	
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
 		if($command->getName() == "timeranks"){
 			switch($args[0]){
@@ -263,6 +328,25 @@ public $prefs;
 				}else{
 					$sender->sendMessage("You have not the permission to run this command");
 					return true;
+				}
+			break;
+			case "buy":
+				if($this->timerankseconomy !== false){
+					if($this->timerankseconomy == "EconomyS"){
+						$rank = $this->getRank($sender->getName());
+						$nextrank = $this->getNextRank($sender->getName());
+						$cost = $this->values->get($nextrank['cost']);
+						$money = $this->economys->myMoney($sender);
+						if($cost > $money){
+							$sender->sendMessage("[TimeRanks] You don't have enough money");
+						}else{
+							$this->economy->reduceMoney($sender, $cost);
+							$this->setRank($sender->getName(), $nextrank);
+							$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
+						}
+					}
+				}else{
+					$sender->sendMessage("TimeRanks did not loaded with any economy plugin.");
 				}
 			break;
 			}
