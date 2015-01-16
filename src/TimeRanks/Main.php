@@ -1,7 +1,6 @@
 <?php
-
 namespace TimeRanks;
-//todo
+
 use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
@@ -17,7 +16,7 @@ use pocketmine\command\CommandExecutor;
 use pocketmine\event\Listener;
 
 class Main extends PluginBase implements Listener{
-
+	
 public $times;
 public $values;
 public $prefs;
@@ -28,8 +27,7 @@ public $prefs;
 		$this->times = new Config($this->getDataFolder()."times.yml", Config::YAML);
 		$this->values = new Config($this->getDataFolder()."values.yml", Config::YAML, 
 			array(
-				"firstgroup" => array(
-					"name" => "Newly Spawned",
+				"NewlySpawned" => array(
 					"minute" => 0,
 					"blocks" => array(),
 					"levels" => array(
@@ -37,8 +35,7 @@ public $prefs;
 					),
 					"chat" => true
 				),
-				"secondgroup" => array(
-					"name" => "Tree Puncher",
+				"TreePuncher" => array(
 					"minute" => 30,
 					"blocks" => array(),
 					"levels" => array(
@@ -46,8 +43,7 @@ public $prefs;
 					),
 					"chat" => true
 				),
-				"thirdgroup" => array(
-					"name" => "Coal User",
+				"CoalUser" => array(
 					"minute" => 60,
 					"blocks" => array(),
 					"levels" => array(
@@ -55,8 +51,7 @@ public $prefs;
 					),
 					"chat" => true
 				),
-				"fourthgroup" => array(
-					"name" => "Iron Miner",
+				"IronMiner" => array(
 					"minute" => 180,
 					"blocks" => array(),
 					"levels" => array(
@@ -64,8 +59,7 @@ public $prefs;
 					),
 					"chat" => true
 				),
-				"fifthgroup" => array(
-					"name" => "Gold Player",
+				"GoldPlayer" => array(
 					"minute" => 300,
 					"blocks" => array(),
 					"levels" => array(
@@ -73,8 +67,7 @@ public $prefs;
 					),
 					"chat" => true
 				),
-				"sixthgroup" => array(
-					"name" => "Diamond User",
+				"DiamondUser" => array(
 					"minute" => 600,
 					"blocks" => array(),
 					"levels" => array(
@@ -82,8 +75,7 @@ public $prefs;
 					),
 					"chat" => true
 				),
-				"seventhgroup" => array(
-					"name" => "Server Pro",
+				"ServerPro" => array(
 					"minute" => 1440,
 					"blocks" => array(),
 					"levels" => array(
@@ -101,154 +93,144 @@ public $prefs;
 				"chat-fromat" => false
 			)
 		);
-		$this->getServer->getScheduler->scheduleRepeatingTask(new minuteSchedule($this), 72.000);
+		$this->getServer->getScheduler()->scheduleRepeatingTask(new minuteSchedule($this), 1200);
 	}
 	
 	public function OnDisable(){
-		
-	}
-	
-	public function getRankName($playername){
-		$minutes = $this->times->get($playername[0]);
-		if($minutes >= $this->values->get('firstgroup'['minute']) and $minutes < $this->values->get('secondgroup'['minute'])){
-			$rankname = $this->values->get('firstgroup'['name']);
-		}elseif($minutes >= $this->values->get('secondgroup'['minute']) and $minutes < $this->values->get('thirdgroup'['minute'])){
-			$rankname = $this->values->get('secondgroup'['name']);
-		}elseif($minutes >= $this->values->get('thirdgroup'['minute']) and $minutes < $this->values->get('fourthgroup'['minute'])){
-			$rankname = $this->values->get('thirdgroup'['name']);
-		}elseif($minutes >= $this->values->get('fourthgroup'['minute']) and $minutes < $this->values->get('fifthgroup'['minute'])){
-			$rankname = $this->values->get('fourthgroup'['name']);
-		}elseif($minutes >= $this->values->get('fifthgroup'['minute']) and $minutes < $this->values->get('sixthgroup'['minute'])){
-			$rankname = $this->values->get('fifthgroup'['name']);
-		}elseif($minutes >= $this->values->get('sixthgroup'['minute']) and $minutes < $this->values->get('seventhgroup'['minute'])){
-			$rankname = $this->values->get('sixthgroup'['name']);
-		}elseif($minutes >= $this->values->get('seventhgroup'['minute'])){
-			$rankname = $this->values->get('seventhgroup'['name']);
-		}else{
-			$rankname = "Undefinied rank name";
-		}
-		return $rankname;
+		$this->prefs->save();
+		$this->values->save();
+		$this->times->save();
 	}
 	
 	public function getRank($playername){
+		
+		$lowerranks = array();
 		$minutes = $this->times->get($playername[0]);
-		if($minutes >= $this->values->get('firstgroup'['minute']) and $minutes < $this->values->get('secondgroup'['minute'])){
-			$rank = 'firstgroup';
-		}elseif($minutes >= $this->values->get('secondgroup'['minute']) and $minutes < $this->values->get('thirdgroup'['minute'])){
-			$rank = 'secondgroup';
-		}elseif($minutes >= $this->values->get('thirdgroup'['minute']) and $minutes < $this->values->get('fourthgroup'['minute'])){
-			$rank = 'thirdgroup';
-		}elseif($minutes >= $this->values->get('fourthgroup'['minute']) and $minutes < $this->values->get('fifthgroup'['minute'])){
-			$rank = 'fourthgroup';
-		}elseif($minutes >= $this->values->get('fifthgroup'['minute']) and $minutes < $this->values->get('sixthgroup'['minute'])){
-			$rank = 'fifthgroup';
-		}elseif($minutes >= $this->values->get('sixthgroup'['minute']) and $minutes < $this->values->get('seventhgroup'['minute'])){
-			$rank = 'sixthgroup';
-		}elseif($minutes >= $this->values->get('seventhgroup'['minute'])){
-			$rank = 'seventhgroup';
-		}else{
-			$rank = "Undefinied rank";
+		$ranks = $this->values->get('ranks');
+		
+		foreach($ranks as $r){
+			$rankminute = $r['minute'];
+			if($rankminute == $minutes){
+				$rank = $r;
+			}elseif($rankminute < $minutes){
+				array_push($lowerranks, $r);
+			}
 		}
+		
+		rsort($lowerranks);
+		$ranked = array_shift($lowerranks);
+		
+		foreach($ranks as $r){
+			if($r['minute'] == $ranked){
+				$rank = $r;
+			}
+		}
+		
+		unset($lowerranks);
+		
 		return $rank;
+		
 	}
 	
 	public function getBlockRank($blockID){
-		if(in_array($blockID, $this-values->get('firstgroup'['blocks']))){
-			$rank = $this->values->get('firstgroup'['name']);
-		}elseif(in_array($blockID, $this-values->get('secondgroup'['blocks']))){
-			$rank = $this->values->get('secondgroup'['name']);
-		}elseif(in_array($blockID, $this-values->get('thirdgroup'['blocks']))){
-			$rank = $this->values->get('thirdgroup'['name']);
-		}elseif(in_array($blockID, $this-values->get('fourthgroup'['blocks']))){
-			$rank = $this->values->get('fourthgroup'['name']);
-		}elseif(in_array($blockID, $this-values->get('fifthgroup'['blocks']))){
-			$rank = $this->values->get('fifthgroup'['name']);
-		}elseif(in_array($blockID, $this-values->get('sixthgroup'['blocks']))){
-			$rank = $this->values->get('sixthgroup'['name']);
-		}elseif(in_array($blockID, $this-values->get('seventhgroup'['blocks']))){
-			$rank = $this->values->get('seventhgroup'['name']);
-		}else{
-			$rank = "Undefinied block rank";
+		
+		$ranked = array();
+		$rankminutes = array();
+		$ranks = $this->values->get('ranks');
+		
+		foreach($ranks as $r){
+			if(in_array($blockID, $r['blocks'])){
+				array_push($ranked, $r);
+			}
 		}
-		return $rank;
+		
+		foreach($ranks as $r){
+			if(in_array($r, $ranked)){
+				array_push($rankminutes, $r['minute']);
+			}
+		}
+		
+		sort($rankminutes);
+		$min = array_shift($rankminutes);
+		
+		foreach($ranks as $r){
+			if($r['minute'] == $min){
+				$blockrank = $r;
+			}
+		}
+		
+		return $blockrank;
+		
 	}
 	
-	public function getLevelRank($level){
-		if(in_array($level, $this-values->get('firstgroup'['levels']))){
-			$rank = $this->values->get('firstgroup'['name']);
-		}elseif(in_array($level, $this-values->get('secondgroup'['levels']))){
-			$rank = $this->values->get('secondgroup'['name']);
-		}elseif(in_array($level, $this-values->get('thirdgroup'['levels']))){
-			$rank = $this->values->get('thirdgroup'['name']);
-		}elseif(in_array($level, $this-values->get('fourthgroup'['levels']))){
-			$rank = $this->values->get('fourthgroup'['name']);
-		}elseif(in_array($level, $this-values->get('fifthgroup'['levels']))){
-			$rank = $this->values->get('fifthgroup'['name']);
-		}elseif(in_array($level, $this-values->get('sixthgroup'['levels']))){
-			$rank = $this->values->get('sixthgroup'['name']);
-		}elseif(in_array($level, $this-values->get('seventhgroup'['levels']))){
-			$rank = $this->values->get('seventhgroup'['name']);
-		}else{
-			$rank = "Undefinied level rank";
+	public function getLevelRank($levelname){
+		
+		$ranked = array();
+		$rankminutes = array();
+		$ranks = $this->values->get('ranks');
+		
+		foreach($ranks as $r){
+			if(in_array($levelname, $r['levels'])){
+				array_push($ranked, $r);
+			}
 		}
-		return $rank;
+		
+		foreach($ranks as $r){
+			if(in_array($r, $ranked)){
+				array_push($rankminutes, $r['minute']);
+			}
+		}
+		
+		sort($rankminutes);
+		$min = array_shift($rankminutes);
+		
+		foreach($ranks as $r){
+			if($r['minute'] == $min){
+				$levelrank = $r;
+			}
+		}
+		
+		return $levelrank;
+		
 	}
 	
-	public function setRank($player, $rank){
-		if($rank == "firstrank" or $rank == $this->values->get('firstrank'['name'])){
-			$minute = $this->values->get('firstrank'['minutes']);
-			$this->times->set($player, array($minute));
-		}elseif($rank == "secondrank" or $rank == $this->values->get('secondrank'['name'])){
-			$minute = $this->values->get('secondrank'['minutes']);
-			$this->times->set($player, array($minute));
-		}elseif($rank == "thirdrank" or $rank == $this->values->get('thirdrank'['name'])){
-			$minute = $this->values->get('thirdrank'['minutes']);
-			$this->times->set($player, array($minute));
-		}elseif($rank == "fourthrank" or $rank == $this->values->get('fourthrank'['name'])){
-			$minute = $this->values->get('fourthrank'['minutes']);
-			$this->times->set($player, array($minute));
-		}elseif($rank == "fifthrank" or $rank == $this->values->get('fifthrank'['name'])){
-			$minute = $this->values->get('fifthrank'['minutes']);
-			$this->times->set($player, array($minute));
-		}elseif($rank == "sixthrank" or $rank == $this->values->get('sixthrank'['name'])){
-			$minute = $this->values->get('sixthrank'['minutes']);
-			$this->times->set($player, array($minute));
-		}elseif($rank == "seventhrank" or $rank == $this->values->get('seventhrank'['name'])){
-			$minute = $this->values->get('seventhrank'['minutes']);
-			$this->times->set($player, array($minute));
-		}else{
-			return "This rank doesn't exist.";
+	public function setRank($playername, $rank){
+		
+		$ranks = $this->values->get($rank);
+		
+		if(isset($rank) and isset($this->times->get($playername))){
+			$min = $ranks['minute'];
+			$this->times->set($playername, array($min));
 		}
 		return true;
 	}
 	
-	public function getMinutesLeft($player){
-			$rank = $this->getRank($player);
-			if($rank == "firstrank"){
-				$minutes = $this->values->get('secondrank'['minute']) - $this->times($player[0])
-			}elseif($rank == "secondrank"){
-				$minutes = $this->values->get('thirdrank'['minute']) - $this->times($player[0])
-			}elseif($rank == "thirdrank"){
-				$minutes = $this->values->get('foruthrank'['minute']) - $this->times($player[0])
-			}elseif($rank == "fourthrank"){
-				$minutes = $this->values->get('fifthrank'['minute']) - $this->times($player[0])
-			}elseif($rank == "fifthrank"){
-				$minutes = $this->values->get('sixthrank'['minute']) - $this->times($player[0])
-			}elseif($rank == "sixthrank"){
-				$minutes = $this->values->get('seventhrank'['minute']) - $this->times($player[0])
+	public function getMinutesLeft($playername){
+		$rank = $this->getRank($playername);
+		$higherranks = array();
+		$ranks = $this->values->get('ranks');
+		$min = "minute";
+		foreach($ranks as $r){
+			$rankminute = $r['minute'];
+			if($rankminute > $this->values->getNested($ranks.$rank.$min)){ //$ranks[$rank]['minute']
+				array_push($higherranks, $rankminute);
 			}
+		}
+		sort($higherranks);
+		$nextrankminute = array_shift($higherranks);
+		$minutes = $nextrankminute - $this->values->getNested($ranks.$rank.$min);
+		
 		return $minutes;
 	}
 	
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
 		if($command->getName() == "timeranks"){
-			$params = array_shift($args[0]);
-			switch($params){
+			switch($args[0]){
 			case "get":
 				if(!(isset($args[1]))){
-					$group = $this->getRankName($sender->getName());
+					$group = $this->getRank($sender->getName());
 					$sender->sendMessage("[TimeRanks] You currently have the rank: ".$group);
-					if($this->getRank($sender->getName) != "seventhrank"){
+					if(!$this->isLastRank($this->getRank($sender->getName))){ //TODO
 						$sender->sendMessage("[TimeRanks] You have ".$this->getMinutesLeft($sender->getName)." minutes left untill you change the rank.");
 					}else{
 						$sender->sendMessage("[TimeRanks] You have the highest rank!");
@@ -256,9 +238,9 @@ public $prefs;
 					return true;
 				}else{
 					$user = $args[1];
-					$group = $this->getRankName($user);
+					$group = $this->getRank($user);
 					$sender->sendMessage("[TimeRanks] ".$user." has currently the rank: ".$group);
-					if($this->getRank($user) != "seventhrank"){
+					if(!$this->isLastRank($this->getRank($user))){ //TODO
 						$sender->sendMessage("[TimeRanks] ".$user." has ".$this->getMinutesLeft($user)." minutes left untill he changes the rank.");
 					}else{
 						$sender->sendMessage("[TimeRanks] ".$user." has the highest rank!");
@@ -287,12 +269,10 @@ public $prefs;
 	public function onBlockPlace(BlockPlaceEvent $event){
 		$player = $event->getPlayer();
 		$playername = $event->getPlayer()->getName();
-		$playerrank = $this->getRank($player);
+		$playerrank = $this->getRank($playername);
 		$ID = $event->getBlock()->getID();
 		if($this->prefs->get("disable-blocks-placing") == true){
-			if(in_array($ID, $this-values->get($playerrank['blocks']))){
-				$event->setCancelled(false);
-			}else{
+			if(!in_array($ID, $this-values->get($playerrank['blocks']))){
 				$event->setCancelled();
 				$player->sendMessage("[TimeRanks] Your rank is too low to use this block.");
 				$player->sendMessage("[TimeRanks] You need rank: ".$this->getBlockRank($ID));
@@ -303,12 +283,10 @@ public $prefs;
 	public function onBlockBreak(BlockBreakEvent $event){
 		$player = $event->getPlayer();
 		$playername = $event->getPlayer()->getName();
-		$playerrank = $this->getRank($player);
+		$playerrank = $this->getRank($playername);
 		$ID = $event->getBlock()->getID();
 		if($this->prefs->get("disable-blocks-breaking") == true){
-			if(in_array($ID, $this-values->get($playerrank['blocks']))){
-				$event->setCancelled(false);
-			}else{
+			if(!in_array($ID, $this-values->get($playerrank['blocks']))){
 				$event->setCancelled();
 				$player->sendMessage("[TimeRanks] Your rank is too low to use this block.");
 				$player->sendMessage("[TimeRanks] You need rank: ".$this->getBlockRank($ID));
@@ -317,18 +295,18 @@ public $prefs;
 	}
 	
 	public function onLevelChange(EntityLevelChangeEvent $event){
-		if($event->getEntity instanceof Player){
+		if($event->getEntity() instanceof Player){
 			if($this->prefs->get("disable-joining-levels") == true){
 				$player = $event->getEntity();
 				$playername = $event->getEntity->getName();
 				$playerrank = $this->getRank($player);
 				$target = $event->getTartget()->getName();
 				if(in_array($target, $this->values->get($playerrank['levels']))){
-					$event->setCancelled(false);
-				}else{
 					$event->setCancelled();
 					$player->sendMessage("[TimeRanks] Your rank is too low to join that world");
 					$player->sendMessage("[TimeRanks] You need rank: ".$this->getLevelRank($target));
+					$deflevel = $this->getServer()->getDefaultLevel()->getSafeSpawn();
+					$player->teleport($deflevel);
 				}
 			}
 		}
@@ -338,9 +316,8 @@ public $prefs;
 		$player = $event->getPlayer();
 		$playername = $event->getPlayer()->getName();
 		$playerrank = $this->getRank($playername);
-		$playerrankname = $this->getRankName($playername);
 		if($this->prefs->get("chat-format") == true){
-			$event->setFormat("[".$playerrankname."]<".$playername.">: ".$event->getMessage);
+			$event->setFormat("[".$playerrank."]<".$playername.">: ".$event->getMessage());
 		}
 		if($this->prefs->get("disable-chat") == true){
 			if($this->values->get($playerrank['chat']) == false){
