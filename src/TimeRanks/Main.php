@@ -344,6 +344,21 @@ private $pockemoney;
 							$this->setRank($sender->getName(), $nextrank);
 							$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
 						}
+					}elseif($this->timerankseconomy == "PocketMoney"){
+						$rank = $this->getRank($sender->getName());
+						$nextrank = $this->getNextRank($sender->getName());
+						$cost = $this->values->get($nextrank['cost']);
+						$money = $this->pocketmoney->getMoney($sender->getName());
+						if($cost > $money){
+							$sender->sendMessage("[TimeRanks] You don't have enough money");
+						}else{
+							$m = $money - $cost;
+							$this->pocketmoney->setMoney($sender->getName(), $m);
+							$this->setRank($sender->getName(), $nextrank);
+							$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
+						}						
+					}else{
+						$sender->sendMessage("TimeRanks did not loaded with any economy plugin.");
 					}
 				}else{
 					$sender->sendMessage("TimeRanks did not loaded with any economy plugin.");
