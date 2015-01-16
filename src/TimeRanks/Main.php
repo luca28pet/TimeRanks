@@ -206,19 +206,22 @@ public $prefs;
 	}
 	
 	public function getMinutesLeft($playername){
+		
 		$rank = $this->getRank($playername);
 		$higherranks = array();
 		$ranks = $this->values->get('ranks');
-		$min = "minute";
+		$min = $this->times->get($playername[0]);
+		
 		foreach($ranks as $r){
 			$rankminute = $r['minute'];
-			if($rankminute > $this->values->getNested($ranks.$rank.$min)){ //$ranks[$rank]['minute']
+			if($rankminute > $min){
 				array_push($higherranks, $rankminute);
 			}
 		}
+		
 		sort($higherranks);
 		$nextrankminute = array_shift($higherranks);
-		$minutes = $nextrankminute - $this->values->getNested($ranks.$rank.$min);
+		$minutes = $nextrankminute - $min;
 		
 		return $minutes;
 	}
