@@ -291,6 +291,26 @@ private $pockemoney;
 		return $nextrank;
 	}
 	
+	public function isLastRank($rank){
+		$higherranks = array();
+		$ranks = $this->values->get('ranks');
+		$min = $this->values->get($rank['minute']);
+		
+		foreach($ranks as $r){
+			$rankminute = $r['minute'];
+			if($rankminute > $min){
+				array_push($higherranks, $rankminute);
+			}
+		}
+		
+		if(count($higherranks) === 0){
+			return true;
+		}else{
+			return false;
+		}
+
+	}
+	
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
 		if($command->getName() == "timeranks"){
 			switch($args[0]){
@@ -298,7 +318,7 @@ private $pockemoney;
 				if(!(isset($args[1]))){
 					$group = $this->getRank($sender->getName());
 					$sender->sendMessage("[TimeRanks] You currently have the rank: ".$group);
-					if(!$this->isLastRank($this->getRank($sender->getName))){ //TODO
+					if(!$this->isLastRank($this->getRank($sender->getName))){
 						$sender->sendMessage("[TimeRanks] You have ".$this->getMinutesLeft($sender->getName)." minutes left untill you change the rank.");
 					}else{
 						$sender->sendMessage("[TimeRanks] You have the highest rank!");
