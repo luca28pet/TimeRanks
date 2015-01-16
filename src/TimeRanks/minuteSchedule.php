@@ -23,5 +23,6 @@ class minuteSchedule extends PluginTask{
 				$this->plugin->times->set($pn, array($currentminute));
 			}
 		}
+		$this->plugin->times->save();
 	}
 }
