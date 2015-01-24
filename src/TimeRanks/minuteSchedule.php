@@ -19,7 +19,7 @@ class minuteSchedule extends PluginTask{
 	  		if(!($this->plugin->times->exists($pn))){
 				$this->plugin->times->set($pn, array(1));
 			}else{
-				$currentminute = $this->plugin->times->get($pn[0]) + 1;
+				$currentminute = $this->plugin->times->get($pn)[0] + 1;
 				$this->plugin->times->set($pn, array($currentminute));
 			}
 		}
