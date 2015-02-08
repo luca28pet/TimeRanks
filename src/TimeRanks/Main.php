@@ -222,7 +222,12 @@ private $pocketmoney;
 		return $blockrank;
 		
 	}
-	
+
+	/**
+	 * @param $levelname
+	 * @return mixed
+	 */
+
 	public function getLevelRank($levelname){
 		
 		$ranked = array();
@@ -462,7 +467,7 @@ private $pocketmoney;
 				$player = $event->getEntity();
 				$playerrank = $this->getRank($player);
 				$target = $event->getTarget()->getName();
-				if(in_array($target, $this->values->get($playerrank['levels']))){
+				if(!in_array($target, $this->values->get($playerrank['levels']))){
 					$event->setCancelled();
 					$player->sendMessage("[TimeRanks] Your rank is too low to join that world");
 					$player->sendMessage("[TimeRanks] You need rank: ".$this->getLevelRank($target));
