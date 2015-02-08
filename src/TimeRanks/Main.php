@@ -147,8 +147,9 @@ private $pocketmoney;
 	}
 
 	private function economyError(){
-		$this->getLogger()->info(TextFormat::RED."You need to specify a economy plugin in preferences.yml or disable enable-economy");
+		$this->getLogger()->info(TextFormat::RED."You need to specify a valid economy plugin in preferences.yml or put to false enable-economy");
 		$this->getLogger()->info(TextFormat::RED."TimeRanks DID NOT load any economy plugin.");
+		$this->getLogger()->info(TextFormat::RED."Valid economy plugins: economys, pocketmoney.");
 	}
 
 	/**
