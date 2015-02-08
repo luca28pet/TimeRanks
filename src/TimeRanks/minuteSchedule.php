@@ -8,7 +8,7 @@ use pocketmine\utils\Config;
 
 class minuteSchedule extends PluginTask{
   
-	public function __construct($plugin){
+	public function __construct(Main $plugin){
 		$this->plugin = $plugin;
 		parent::__construct($plugin);
 	}

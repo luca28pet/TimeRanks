@@ -4,6 +4,7 @@ namespace TimeRanks;
 use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
+use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\PluginTask;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -12,18 +13,21 @@ use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\utils\Config;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\CommandExecutor;
 use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat;
 
 class Main extends PluginBase implements Listener{
-	
+
+/**@var Config*/
 public $times;
+/**@var Config*/
 public $values;
+/**@var Config*/
 public $prefs;
+
 public $timerankseconomy;
 private $economys;
-private $pockemoney;
+private $pocketmoney;
 
 	public function OnEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -35,7 +39,7 @@ private $pockemoney;
 					"minute" => 0,
 					"blocks" => array(),
 					"levels" => array(
-						world, survival
+						"world", "survival"
 					),
 					"chat" => true,
 					"cost" => 100
@@ -44,7 +48,7 @@ private $pockemoney;
 					"minute" => 30,
 					"blocks" => array(),
 					"levels" => array(
-						world, survival
+						"world", "survival"
 					),
 					"chat" => true,
 					"cost" => 200
@@ -53,7 +57,7 @@ private $pockemoney;
 					"minute" => 60,
 					"blocks" => array(),
 					"levels" => array(
-						world, survival
+						"world", "survival"
 					),
 					"chat" => true,
 					"cost" => 300
@@ -62,7 +66,7 @@ private $pockemoney;
 					"minute" => 180,
 					"blocks" => array(),
 					"levels" => array(
-						world, survival
+						"world", "survival"
 					),
 					"chat" => true,
 					"cost" => 400
@@ -71,7 +75,7 @@ private $pockemoney;
 					"minute" => 300,
 					"blocks" => array(),
 					"levels" => array(
-						world, survival
+						"world", "survival"
 					),
 					"chat" => true,
 					"cost" => 500
@@ -80,7 +84,7 @@ private $pockemoney;
 					"minute" => 600,
 					"blocks" => array(),
 					"levels" => array(
-						world, survival
+						"world", "survival"
 					),
 					"chat" => true,
 					"cost" => 600
@@ -89,7 +93,7 @@ private $pockemoney;
 					"minute" => 1440,
 					"blocks" => array(),
 					"levels" => array(
-						world, survival
+						"world", "survival"
 					),
 					"chat" => true,
 					"cost" => 700
@@ -106,32 +110,33 @@ private $pockemoney;
 				"preferred-economy" => "economys"
 			)
 		);
-		$this->getServer->getScheduler()->scheduleRepeatingTask(new minuteSchedule($this), 1200);
+		$this->getServer()->getScheduler()->scheduleRepeatingTask(new minuteSchedule($this), 1200);
 		
 		if($this->prefs->get("enable-economy") == true){
 			if($this->prefs->get("preferred-economy") == "economys"){
 				if($this->getServer()->getPluginManager()->getPlugin("EconomyAPI") instanceof Plugin){
             				$this->economys = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
             				$this->getLogger()->info("TimeRanks loaded with EconomyS by onebone");
-            				$this->timerankseconomy == "EconomyS";
+            				$this->timerankseconomy = "EconomyS";
 				}else{
-					$this->timerankseconomy == false;
+					$this->economyError();
+					$this->timerankseconomy = false;
 				}
 			}elseif($this->prefs->get("preferred-economy") == "pocketmoney"){
 				if($this->getServer()->getPluginManager()->getPlugin("PocketMoney") instanceof Plugin){
 					$this->pocketmoney = $this->getServer()->getPluginManager()->getPlugin("PocketMoney");
 					$this->getLogger()->info("TimeRanks loaded with PocketMoney by MinecrafterJPN");
-					$this->timerankseconomy == "PocketMoney";
+					$this->timerankseconomy = "PocketMoney";
 				}else{
-					$this->timerankseconomy == false;
+					$this->economyError();
+					$this->timerankseconomy = false;
 				}
 			}else{
-				$this->getLogger()->info(TextFormat::RED."You need to specify a economy plugin in preferences.yml or disable enable-economy");
-				$this->getLogger()->info(TextFormat::RED."TimeRanks DID NOT load any economy plugin.");
-				$this->timerankseconomy == false;
+				$this->economyError();
+				$this->timerankseconomy = false;
 			}
 		}else{
-			$this->timerankseconomy == false;
+			$this->timerankseconomy = false;
 		}
 	}
 	
@@ -140,11 +145,21 @@ private $pockemoney;
 		$this->values->save();
 		$this->times->save();
 	}
-	
+
+	/**
+	 * @param $playername
+	 * @return mixed
+	 */
+
+	private function economyError(){
+		$this->getLogger()->info(TextFormat::RED."You need to specify a economy plugin in preferences.yml or disable enable-economy");
+		$this->getLogger()->info(TextFormat::RED."TimeRanks DID NOT load any economy plugin.");
+	}
+
 	public function getRank($playername){
 		
 		$lowerranks = array();
-		$minutes = $this->times->get($playername[0]);
+		$minutes = $this->times->get($playername)[0];
 		$ranks = $this->values->get('ranks');
 		
 		foreach($ranks as $r){
@@ -170,7 +185,12 @@ private $pockemoney;
 		return $rank;
 		
 	}
-	
+
+	/**
+	 * @param $blockID
+	 * @return mixed
+	 */
+
 	public function getBlockRank($blockID){
 		
 		$ranked = array();
@@ -232,24 +252,34 @@ private $pockemoney;
 		return $levelrank;
 		
 	}
-	
+
+	/**
+	 * @param $playername
+	 * @param $rank
+	 * @return bool
+	 */
+
 	public function setRank($playername, $rank){
 		
 		$ranks = $this->values->get($rank);
 		
-		if(isset($rank) and isset($this->times->get($playername))){
+		if(isset($rank) and $this->times->exists($playername)){
 			$min = $ranks['minute'];
 			$this->times->set($playername, array($min));
 		}
 		return true;
 	}
-	
+
+	/**
+	 * @param $playername
+	 * @return mixed
+	 */
+
 	public function getMinutesLeft($playername){
-		
-		$rank = $this->getRank($playername);
+
 		$higherranks = array();
 		$ranks = $this->values->get('ranks');
-		$min = $this->times->get($playername[0]);
+		$min = $this->times->get($playername)[0];
 		
 		foreach($ranks as $r){
 			$rankminute = $r['minute'];
@@ -264,13 +294,17 @@ private $pockemoney;
 		
 		return $minutes;
 	}
-	
+
+	/**
+	 * @param $playername
+	 * @return mixed
+	 */
+
 	public function getNextRank($playername){
-		
-		$rank = $this->getRank($playername);
+
 		$higherranks = array();
 		$ranks = $this->values->get('ranks');
-		$min = $this->times->get($playername[0]);
+		$min = $this->times->get($playername)[0];
 		
 		foreach($ranks as $r){
 			$rankminute = $r['minute'];
@@ -290,7 +324,12 @@ private $pockemoney;
 		
 		return $nextrank;
 	}
-	
+
+	/**
+	 * @param $rank
+	 * @return bool
+	 */
+
 	public function isLastRank($rank){
 		$higherranks = array();
 		$ranks = $this->values->get('ranks');
@@ -318,8 +357,8 @@ private $pockemoney;
 				if(!(isset($args[1]))){
 					$group = $this->getRank($sender->getName());
 					$sender->sendMessage("[TimeRanks] You currently have the rank: ".$group);
-					if(!$this->isLastRank($this->getRank($sender->getName))){
-						$sender->sendMessage("[TimeRanks] You have ".$this->getMinutesLeft($sender->getName)." minutes left untill you change the rank.");
+					if(!$this->isLastRank($this->getRank($sender->getName()))){
+						$sender->sendMessage("[TimeRanks] You have ".$this->getMinutesLeft($sender->getName())." minutes left untill you change the rank.");
 					}else{
 						$sender->sendMessage("[TimeRanks] You have the highest rank!");
 					}
@@ -328,7 +367,7 @@ private $pockemoney;
 					$user = $args[1];
 					$group = $this->getRank($user);
 					$sender->sendMessage("[TimeRanks] ".$user." has currently the rank: ".$group);
-					if(!$this->isLastRank($this->getRank($user))){ //TODO
+					if(!$this->isLastRank($this->getRank($user))){
 						$sender->sendMessage("[TimeRanks] ".$user." has ".$this->getMinutesLeft($user)." minutes left untill he changes the rank.");
 					}else{
 						$sender->sendMessage("[TimeRanks] ".$user." has the highest rank!");
@@ -360,7 +399,7 @@ private $pockemoney;
 						if($cost > $money){
 							$sender->sendMessage("[TimeRanks] You don't have enough money");
 						}else{
-							$this->economy->reduceMoney($sender, $cost);
+							$this->economys->reduceMoney($sender, $cost);
 							$this->setRank($sender->getName(), $nextrank);
 							$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
 						}
@@ -394,7 +433,7 @@ private $pockemoney;
 		$playerrank = $this->getRank($playername);
 		$ID = $event->getBlock()->getID();
 		if($this->prefs->get("disable-blocks-placing") == true){
-			if(!in_array($ID, $this-values->get($playerrank['blocks']))){
+			if(!in_array($ID, $this->values->get($playerrank['blocks']))){
 				$event->setCancelled();
 				$player->sendMessage("[TimeRanks] Your rank is too low to use this block.");
 				$player->sendMessage("[TimeRanks] You need rank: ".$this->getBlockRank($ID));
@@ -408,7 +447,7 @@ private $pockemoney;
 		$playerrank = $this->getRank($playername);
 		$ID = $event->getBlock()->getID();
 		if($this->prefs->get("disable-blocks-breaking") == true){
-			if(!in_array($ID, $this-values->get($playerrank['blocks']))){
+			if(!in_array($ID, $this->values->get($playerrank['blocks']))){
 				$event->setCancelled();
 				$player->sendMessage("[TimeRanks] Your rank is too low to use this block.");
 				$player->sendMessage("[TimeRanks] You need rank: ".$this->getBlockRank($ID));
@@ -420,9 +459,8 @@ private $pockemoney;
 		if($event->getEntity() instanceof Player){
 			if($this->prefs->get("disable-joining-levels") == true){
 				$player = $event->getEntity();
-				$playername = $event->getEntity->getName();
 				$playerrank = $this->getRank($player);
-				$target = $event->getTartget()->getName();
+				$target = $event->getTarget()->getName();
 				if(in_array($target, $this->values->get($playerrank['levels']))){
 					$event->setCancelled();
 					$player->sendMessage("[TimeRanks] Your rank is too low to join that world");
