@@ -146,15 +146,15 @@ private $pocketmoney;
 		$this->times->save();
 	}
 
-	/**
-	 * @param $playername
-	 * @return mixed
-	 */
-
 	private function economyError(){
 		$this->getLogger()->info(TextFormat::RED."You need to specify a economy plugin in preferences.yml or disable enable-economy");
 		$this->getLogger()->info(TextFormat::RED."TimeRanks DID NOT load any economy plugin.");
 	}
+
+	/**
+	 * @param $playername
+	 * @return mixed
+	 */
 
 	public function getRank($playername){
 		
