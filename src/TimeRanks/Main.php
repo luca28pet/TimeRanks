@@ -396,37 +396,38 @@ private $pocketmoney;
 				}
 			break;
 			case "buy":
-				if($this->timerankseconomy !== false){
-					if($this->timerankseconomy == "EconomyS"){
-						$rank = $this->getRank($sender->getName());
-						$nextrank = $this->getNextRank($sender->getName());
-						$cost = $this->values->get($nextrank['cost']);
-						$money = $this->economys->myMoney($sender);
-						if($cost > $money){
-							$sender->sendMessage("[TimeRanks] You don't have enough money");
-						}else{
-							$this->economys->reduceMoney($sender, $cost);
-							$this->setRank($sender->getName(), $nextrank);
-							$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
-						}
-					}elseif($this->timerankseconomy == "PocketMoney"){
-						$rank = $this->getRank($sender->getName());
-						$nextrank = $this->getNextRank($sender->getName());
-						$cost = $this->values->get($nextrank['cost']);
-						$money = $this->pocketmoney->getMoney($sender->getName());
-						if($cost > $money){
-							$sender->sendMessage("[TimeRanks] You don't have enough money");
-						}else{
-							$m = $money - $cost;
-							$this->pocketmoney->setMoney($sender->getName(), $m);
-							$this->setRank($sender->getName(), $nextrank);
-							$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
-						}						
+				if($this->timerankseconomy == "EconomyS"){
+					$rank = $this->getRank($sender->getName());
+					$nextrank = $this->getNextRank($sender->getName());
+					$cost = $this->values->get($nextrank['cost']);
+					$money = $this->economys->myMoney($sender);
+					if($cost > $money){
+						$sender->sendMessage("[TimeRanks] You don't have enough money");
+						return true;
 					}else{
-						$sender->sendMessage("TimeRanks did not loaded with any economy plugin.");
+						$this->economys->reduceMoney($sender, $cost);
+						$this->setRank($sender->getName(), $nextrank);
+						$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
+						return true;
 					}
+				}elseif($this->timerankseconomy == "PocketMoney"){
+					$rank = $this->getRank($sender->getName());
+					$nextrank = $this->getNextRank($sender->getName());
+					$cost = $this->values->get($nextrank['cost']);
+					$money = $this->pocketmoney->getMoney($sender->getName());
+					if($cost > $money){
+						$sender->sendMessage("[TimeRanks] You don't have enough money");
+						return true;
+					}else{
+						$m = $money - $cost;
+						$this->pocketmoney->setMoney($sender->getName(), $m);
+						$this->setRank($sender->getName(), $nextrank);
+						$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
+						return true;
+					}						
 				}else{
 					$sender->sendMessage("TimeRanks did not loaded with any economy plugin.");
+					return true;
 				}
 			break;
 			}
