@@ -1,11 +1,9 @@
 <?php
 namespace TimeRanks;
 
-use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\Plugin;
-use pocketmine\scheduler\PluginTask;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockBreakEvent;
@@ -115,9 +113,9 @@ private $pocketmoney;
 		if($this->prefs->get("enable-economy") == true){
 			if($this->prefs->get("preferred-economy") == "economys"){
 				if($this->getServer()->getPluginManager()->getPlugin("EconomyAPI") instanceof Plugin){
-            				$this->economys = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
-            				$this->getLogger()->info("TimeRanks loaded with EconomyS by onebone");
-            				$this->timerankseconomy = "EconomyS";
+					$this->economys = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
+					$this->getLogger()->info("TimeRanks loaded with EconomyS by onebone");
+					$this->timerankseconomy = "EconomyS";
 				}else{
 					$this->economyError();
 					$this->timerankseconomy = false;
@@ -147,9 +145,9 @@ private $pocketmoney;
 	}
 
 	private function economyError(){
-		$this->getLogger()->info(TextFormat::RED."You need to specify a valid economy plugin in preferences.yml or put to false enable-economy");
-		$this->getLogger()->info(TextFormat::RED."TimeRanks DID NOT load any economy plugin.");
-		$this->getLogger()->info(TextFormat::RED."Valid economy plugins: economys, pocketmoney.");
+		$this->getLogger()->warning(TextFormat::RED."You need to specify a valid economy plugin in preferences.yml or put to false enable-economy");
+		$this->getLogger()->warning(TextFormat::RED."TimeRanks DID NOT load any economy plugin.");
+		$this->getLogger()->warning(TextFormat::RED."Valid economy plugins: economys, pocketmoney.");
 	}
 
 	/**
@@ -158,11 +156,9 @@ private $pocketmoney;
 	 */
 
 	public function getRank($playername){
-		
 		$lowerranks = array();
 		$minutes = $this->times->get($playername)[0];
 		$ranks = $this->values->get('ranks');
-		
 		foreach($ranks as $r){
 			$rankminute = $r['minute'];
 			if($rankminute == $minutes){
@@ -171,20 +167,15 @@ private $pocketmoney;
 				array_push($lowerranks, $r);
 			}
 		}
-		
 		rsort($lowerranks);
 		$ranked = array_shift($lowerranks);
-		
 		foreach($ranks as $r){
 			if($r['minute'] == $ranked){
 				$rank = $r;
 			}
 		}
-		
 		unset($lowerranks);
-		
 		return $rank;
-		
 	}
 
 	/**
@@ -193,34 +184,27 @@ private $pocketmoney;
 	 */
 
 	public function getBlockRank($blockID){
-		
 		$ranked = array();
 		$rankminutes = array();
 		$ranks = $this->values->get('ranks');
-		
 		foreach($ranks as $r){
 			if(in_array($blockID, $r['blocks'])){
 				array_push($ranked, $r);
 			}
 		}
-		
 		foreach($ranks as $r){
 			if(in_array($r, $ranked)){
 				array_push($rankminutes, $r['minute']);
 			}
 		}
-		
 		sort($rankminutes);
 		$min = array_shift($rankminutes);
-		
 		foreach($ranks as $r){
 			if($r['minute'] == $min){
 				$blockrank = $r;
 			}
 		}
-		
 		return $blockrank;
-		
 	}
 
 	/**
@@ -229,32 +213,26 @@ private $pocketmoney;
 	 */
 
 	public function getLevelRank($levelname){
-		
 		$ranked = array();
 		$rankminutes = array();
 		$ranks = $this->values->get('ranks');
-		
 		foreach($ranks as $r){
 			if(in_array($levelname, $r['levels'])){
 				array_push($ranked, $r);
 			}
 		}
-		
 		foreach($ranks as $r){
 			if(in_array($r, $ranked)){
 				array_push($rankminutes, $r['minute']);
 			}
 		}
-		
 		sort($rankminutes);
 		$min = array_shift($rankminutes);
-		
 		foreach($ranks as $r){
 			if($r['minute'] == $min){
 				$levelrank = $r;
 			}
 		}
-		
 		return $levelrank;
 		
 	}
@@ -266,9 +244,7 @@ private $pocketmoney;
 	 */
 
 	public function setRank($playername, $rank){
-		
 		$ranks = $this->values->get($rank);
-		
 		if(isset($rank) and $this->times->exists($playername)){
 			$min = $ranks['minute'];
 			$this->times->set($playername, array($min));
@@ -282,22 +258,18 @@ private $pocketmoney;
 	 */
 
 	public function getMinutesLeft($playername){
-
 		$higherranks = array();
 		$ranks = $this->values->get('ranks');
 		$min = $this->times->get($playername)[0];
-		
 		foreach($ranks as $r){
 			$rankminute = $r['minute'];
 			if($rankminute > $min){
 				array_push($higherranks, $rankminute);
 			}
 		}
-		
 		sort($higherranks);
 		$nextrankminute = array_shift($higherranks);
 		$minutes = $nextrankminute - $min;
-		
 		return $minutes;
 	}
 
@@ -307,27 +279,22 @@ private $pocketmoney;
 	 */
 
 	public function getNextRank($playername){
-
 		$higherranks = array();
 		$ranks = $this->values->get('ranks');
 		$min = $this->times->get($playername)[0];
-		
 		foreach($ranks as $r){
 			$rankminute = $r['minute'];
 			if($rankminute > $min){
 				array_push($higherranks, $rankminute);
 			}
 		}
-		
 		sort($higherranks);
 		$nextrankminute = array_shift($higherranks);
-		
 		foreach($ranks as $r){
 			if($r['minute'] == $nextrankminute){
 				$nextrank = $r;
 			}
 		}
-		
 		return $nextrank;
 	}
 
@@ -340,20 +307,17 @@ private $pocketmoney;
 		$higherranks = array();
 		$ranks = $this->values->get('ranks');
 		$min = $this->values->get($rank['minute']);
-		
 		foreach($ranks as $r){
 			$rankminute = $r['minute'];
 			if($rankminute > $min){
 				array_push($higherranks, $rankminute);
 			}
 		}
-		
 		if(count($higherranks) === 0){
 			return true;
 		}else{
 			return false;
 		}
-
 	}
 	
 	public function onCommand(CommandSender $sender, Command $command, $label, array $args){
@@ -382,7 +346,7 @@ private $pocketmoney;
 				}
 			break;
 			case "set":
-				if($sender->isOP()){
+				if($sender->isOp()){
 					if(isset($args[1]) and isset($args[2])){
 						$this->setRank($args[1], $args[2]);
 						$sender->sendMessage("[TimeRanks] Ranks Updated!");
@@ -396,37 +360,36 @@ private $pocketmoney;
 				}
 			break;
 			case "buy":
-				if($this->timerankseconomy !== false){
-					if($this->timerankseconomy == "EconomyS"){
-						$rank = $this->getRank($sender->getName());
-						$nextrank = $this->getNextRank($sender->getName());
-						$cost = $this->values->get($nextrank['cost']);
-						$money = $this->economys->myMoney($sender);
-						if($cost > $money){
-							$sender->sendMessage("[TimeRanks] You don't have enough money");
-						}else{
-							$this->economys->reduceMoney($sender, $cost);
-							$this->setRank($sender->getName(), $nextrank);
-							$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
-						}
-					}elseif($this->timerankseconomy == "PocketMoney"){
-						$rank = $this->getRank($sender->getName());
-						$nextrank = $this->getNextRank($sender->getName());
-						$cost = $this->values->get($nextrank['cost']);
-						$money = $this->pocketmoney->getMoney($sender->getName());
-						if($cost > $money){
-							$sender->sendMessage("[TimeRanks] You don't have enough money");
-						}else{
-							$m = $money - $cost;
-							$this->pocketmoney->setMoney($sender->getName(), $m);
-							$this->setRank($sender->getName(), $nextrank);
-							$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
-						}						
+				if($this->timerankseconomy == "EconomyS"){
+					$nextrank = $this->getNextRank($sender->getName());
+					$cost = $this->values->get($nextrank['cost']);
+					$money = $this->economys->myMoney($sender);
+					if($cost > $money){
+						$sender->sendMessage("[TimeRanks] You don't have enough money");
+						return true;
 					}else{
-						$sender->sendMessage("TimeRanks did not loaded with any economy plugin.");
+						$this->economys->reduceMoney($sender, $cost);
+						$this->setRank($sender->getName(), $nextrank);
+						$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
+						return true;
+					}
+				}elseif($this->timerankseconomy == "PocketMoney"){
+					$nextrank = $this->getNextRank($sender->getName());
+					$cost = $this->values->get($nextrank['cost']);
+					$money = $this->pocketmoney->getMoney($sender->getName());
+					if($cost > $money){
+						$sender->sendMessage("[TimeRanks] You don't have enough money");
+						return true;
+					}else{
+						$m = $money - $cost;
+						$this->pocketmoney->setMoney($sender->getName(), $m);
+						$this->setRank($sender->getName(), $nextrank);
+						$sender->sendMessage("[TimeRanks] You have bought rank: ".$nextrank);
+						return true;
 					}
 				}else{
 					$sender->sendMessage("TimeRanks did not loaded with any economy plugin.");
+					return true;
 				}
 			break;
 			}
@@ -435,7 +398,7 @@ private $pocketmoney;
 	
 	public function onBlockPlace(BlockPlaceEvent $event){
 		$player = $event->getPlayer();
-		$playername = $event->getPlayer()->getName();
+		$playername = $player->getName();
 		$playerrank = $this->getRank($playername);
 		$ID = $event->getBlock()->getID();
 		if($this->prefs->get("disable-blocks-placing") == true){
@@ -462,17 +425,18 @@ private $pocketmoney;
 	}
 	
 	public function onLevelChange(EntityLevelChangeEvent $event){
-		if($event->getEntity() instanceof Player){
+		$player = $event->getEntity();
+		if($player instanceof Player){
 			if($this->prefs->get("disable-joining-levels") == true){
-				$player = $event->getEntity();
-				$playerrank = $this->getRank($player);
+				$playername = $player->getName();
+				$playerrank = $this->getRank($playername);
 				$target = $event->getTarget()->getName();
 				if(!in_array($target, $this->values->get($playerrank['levels']))){
 					$event->setCancelled();
 					$player->sendMessage("[TimeRanks] Your rank is too low to join that world");
 					$player->sendMessage("[TimeRanks] You need rank: ".$this->getLevelRank($target));
 					$deflevel = $this->getServer()->getDefaultLevel()->getSafeSpawn();
-					$player->teleport($deflevel);
+					$event->getEntity()->teleport($deflevel);
 				}
 			}
 		}
@@ -480,7 +444,7 @@ private $pocketmoney;
 	
 	public function onChat(PlayerChatEvent $event){
 		$player = $event->getPlayer();
-		$playername = $event->getPlayer()->getName();
+		$playername = $player->getName();
 		$playerrank = $this->getRank($playername);
 		if($this->prefs->get("chat-format") == true){
 			$event->setFormat("[".$playerrank."]<".$playername.">: ".$event->getMessage());
