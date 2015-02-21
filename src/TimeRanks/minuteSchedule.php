@@ -2,9 +2,7 @@
 
 namespace TimeRanks;
 
-use pocketmine\Server;
 use pocketmine\scheduler\PluginTask;
-use pocketmine\utils\Config;
 
 class minuteSchedule extends PluginTask{
   

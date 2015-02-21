@@ -7,22 +7,22 @@
     <orderEntry type="module-library">
       <library name="PHP">
         <CLASSES>
-          <root url="file://$USER_HOME$/Desktop/PocketMine-MP" />
+          <root url="file://$USER_HOME$/Desktop/PocketMine-MP - Copia" />
         </CLASSES>
         <SOURCES>
-          <root url="file://$USER_HOME$/Desktop/PocketMine-MP" />
+          <root url="file://$USER_HOME$/Desktop/PocketMine-MP - Copia" />
         </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library">
       <library name="PHARS">
         <CLASSES>
-          <root url="phar://$USER_HOME$/Desktop/PocketMine-MP/plugins/BigBrother_v1.4.0-beta.phar" />
-          <root url="phar://$USER_HOME$/Desktop/PocketMine-MP/PocketMine-MP.phar" />
+          <root url="phar://$USER_HOME$/Desktop/PocketMine-MP - Copia/PocketMine-MP.phar" />
+          <root url="phar://$USER_HOME$/Desktop/PocketMine-MP - Copia/plugins/DevTools_v1.8.0-4c37f602.phar" />
         </CLASSES>
         <SOURCES>
-          <root url="phar://$USER_HOME$/Desktop/PocketMine-MP/plugins/BigBrother_v1.4.0-beta.phar" />
-          <root url="phar://$USER_HOME$/Desktop/PocketMine-MP/PocketMine-MP.phar" />
+          <root url="phar://$USER_HOME$/Desktop/PocketMine-MP - Copia/PocketMine-MP.phar" />
+          <root url="phar://$USER_HOME$/Desktop/PocketMine-MP - Copia/plugins/DevTools_v1.8.0-4c37f602.phar" />
         </SOURCES>
       </library>
     </orderEntry>
