@@ -16,16 +16,16 @@ use pocketmine\utils\TextFormat;
 
 class Main extends PluginBase implements Listener{
 
-/**@var Config*/
-public $times;
-/**@var Config*/
-public $values;
-/**@var Config*/
-public $prefs;
+	/**@var Config*/
+	public $times;
+	/**@var Config*/
+	public $values;
+	/**@var Config*/
+	public $prefs;
 
-public $timerankseconomy;
-private $economys;
-private $pocketmoney;
+	public $timerankseconomy;
+	private $economys;
+	private $pocketmoney;
 
 	public function OnEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
