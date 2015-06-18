@@ -80,7 +80,7 @@ class Main extends PluginBase{
             if($values["minutes"] == $this->data[$player]["minutes"]){
                 return $group;
             }elseif($values["minutes"] < $this->data[$player]["minutes"]){
-                $lowerRanks[] = [$group => (int) $values["minutes"]];
+                $lowerRanks[$group] = (int) $values["minutes"];
             }
         }
         if(count($lowerRanks) === 0){
