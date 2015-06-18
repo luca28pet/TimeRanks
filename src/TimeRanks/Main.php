@@ -2,6 +2,8 @@
 
 namespace TimeRanks;
 
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
@@ -13,6 +15,8 @@ class Main extends PluginBase{
     /**@var \_64FF00\PurePerms\PurePerms*/
     public $purePerms;
     public $data = [];
+    /**@var TimeRanksCommand*/
+    public $command;
 
     public function onEnable(){
         @mkdir($this->getDataFolder());
@@ -40,6 +44,8 @@ class Main extends PluginBase{
         }
         # Task
         $this->getServer()->getScheduler()->scheduleRepeatingTask(new Timer($this), 1200);
+        # Command
+        $this->command = new TimeRanksCommand($this);
     }
 
     public function onDisable(){
@@ -60,6 +66,33 @@ class Main extends PluginBase{
                     $this->purePerms->setGroup($player, $PPGroup);
                 }
             }
+        }
+    }
+
+    public function getRank($player){
+        if($player instanceof Player){
+            $player = strtolower($player->getName());
+        }else{
+            $player = strtolower($player);
+        }
+        $lowerRanks = [];
+        foreach($this->groups as $group => $values){
+            if($values["minutes"] == $this->data[$player]["minutes"]){
+                return $group;
+            }elseif($values["minutes"] < $this->data[$player]["minutes"]){
+                $lowerRanks[] = [$group => (int) $values["minutes"]];
+            }
+        }
+        if(count($lowerRanks) === 0){
+            return "Default Rank";
+        }
+        rsort($lowerRanks);
+        return array_shift(array_keys($lowerRanks));
+    }
+
+    public function onCommand(CommandSender $sender, Command $command, $label, array $args){
+        if(strtolower($command->getName()) === "timeranks"){
+            $this->command->run($sender, $args);
         }
     }
 
