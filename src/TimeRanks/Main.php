@@ -86,7 +86,7 @@ class Main extends PluginBase{
         if(count($lowerRanks) === 0){
             return "Default Rank";
         }
-        rsort($lowerRanks);
+        arsort($lowerRanks);
         return array_shift(array_keys($lowerRanks));
     }
 
