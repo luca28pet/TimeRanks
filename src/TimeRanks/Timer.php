@@ -14,11 +14,7 @@ class Timer extends PluginTask{
     public function onRun($tick){
         foreach($this->plugin->getServer()->getOnlinePlayers() as $player){
             $name = strtolower($player->getName());
-            if(!isset($this->plugin->data[$name]["minutes"])){
-                $this->plugin->data[$name]["minutes"] = 1;
-            }else{
-                $this->plugin->data[$name]["minutes"] += 1;
-            }
+            isset($this->plugin->data[$name]["minutes"]) ? $this->plugin->data[$name]["minutes"] += 1 : $this->plugin->data[$name]["minutes"] = 1;
             $this->plugin->checkRank($player);
         }
     }
