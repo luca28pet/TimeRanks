@@ -80,7 +80,7 @@ class Main extends PluginBase{
             if(isset($values["default"])){
                 continue;
             }
-            if($values["minutes"] == $this->data[strtolower($player->getName())]){
+            if($values["minutes"] == $this->data[strtolower($player->getName())]["minutes"]){
                 $PPGroup = $this->purePerms->getGroup($values["pureperms_group"]);
                 if($PPGroup === null){
                     $player->sendMessage("An error occurred during RankUp. Please contact an administrator");
