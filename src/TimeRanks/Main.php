@@ -103,6 +103,9 @@ class Main extends PluginBase{
         }else{
             $lowerRanks = [];
             foreach($this->ranks as $rank => $values){
+                if(isset($values["default"])){
+                    continue;
+                }
                 if($values["minutes"] == $this->data[$player]["minutes"]){
                     return $rank;
                 }elseif((int) $values["minutes"] < $this->data[$player]["minutes"]){
