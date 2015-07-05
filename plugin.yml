@@ -10,7 +10,7 @@ website: https://github.com/luca28pet/TimeRanks
 commands:
  timeranks:
   description: The main command
-  usage: "/timeranks check"
+  usage: "/timeranks check [player]"
   aliases: [tr, ranks, tranks]
   permission: timeranks.command
 permissions:
