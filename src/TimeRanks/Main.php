@@ -77,6 +77,9 @@ class Main extends PluginBase{
 
     public function checkRank(Player $player){
         foreach($this->ranks as $rank => $values){
+            if(isset($values["default"])){
+                continue;
+            }
             if($values["minutes"] == $this->data[strtolower($player->getName())]){
                 $PPGroup = $this->purePerms->getGroup($values["pureperms_group"]);
                 if($PPGroup === null){
@@ -115,6 +118,7 @@ class Main extends PluginBase{
         if(strtolower($command->getName()) === "timeranks"){
             $this->command->run($sender, $args);
         }
+        return true;
     }
 
 }
