@@ -113,7 +113,7 @@ class Main extends PluginBase{
                 }
             }
             arsort($lowerRanks);
-            return array_shift(array_keys($lowerRanks));
+            return array_keys($lowerRanks)[0];
         }
     }
 

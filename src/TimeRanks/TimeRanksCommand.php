@@ -28,7 +28,7 @@ class TimeRanksCommand{
                             $sender->sendMessage($args[0]." has played less than 1 minute on this server");
                             $sender->sendMessage("Rank is: ".$this->plugin->getRank($args[0]));
                         }else{
-                            $sender->sendMessage($args[0]." has played ".$this->plugin->data[strtolower($sender->getName())]["minutes"]." minutes on this server");
+                            $sender->sendMessage($args[0]." has played ".$this->plugin->data[strtolower($args[0])]["minutes"]." minutes on this server");
                             $sender->sendMessage("Rank is: ".$this->plugin->getRank($args[0]));
                         }
                     }
