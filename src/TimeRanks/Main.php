@@ -76,17 +76,19 @@ class Main extends PluginBase{
     }
 
     public function checkRank(Player $player){
-        foreach($this->ranks as $rank => $values){
-            if(isset($values["default"])){
-                continue;
-            }
-            if($values["minutes"] == $this->data[strtolower($player->getName())]["minutes"]){
-                $PPGroup = $this->purePerms->getGroup($values["pureperms_group"]);
-                if($PPGroup === null){
-                    $player->sendMessage("An error occurred during RankUp. Please contact an administrator");
-                }else{
-                    $player->sendMessage("You are now rank ".$rank);
-                    $this->purePerms->setGroup($player, $PPGroup);
+        if(!$player->hasPermission("timeranks.exempt")){
+            foreach($this->ranks as $rank => $values){
+                if(isset($values["default"])){
+                    continue;
+                }
+                if($values["minutes"] == $this->data[strtolower($player->getName())]["minutes"]){
+                    $PPGroup = $this->purePerms->getGroup($values["pureperms_group"]);
+                    if($PPGroup === null){
+                        $player->sendMessage("An error occurred during RankUp. Please contact an administrator");
+                    }else{
+                        $player->sendMessage("You are now rank ".$rank);
+                        $this->purePerms->setGroup($player, $PPGroup);
+                    }
                 }
             }
         }
@@ -121,7 +123,6 @@ class Main extends PluginBase{
         if(strtolower($command->getName()) === "timeranks"){
             $this->command->run($sender, $args);
         }
-        return true;
     }
 
 }
