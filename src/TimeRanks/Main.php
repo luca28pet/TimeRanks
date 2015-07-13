@@ -14,7 +14,7 @@ class Main extends PluginBase{
     public $ranks;
     /**@var \_64FF00\PurePerms\PurePerms*/
     public $purePerms;
-    /**@var Config::ENUM*/
+    /**@var Config::PROPERTIES*/
     public $data;
     /**@var TimeRanksCommand*/
     public $command;
