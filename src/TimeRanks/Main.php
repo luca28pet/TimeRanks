@@ -14,7 +14,8 @@ class Main extends PluginBase{
     public $ranks;
     /**@var \_64FF00\PurePerms\PurePerms*/
     public $purePerms;
-    public $data = [];
+    /**@var Config::ENUM*/
+    public $data;
     /**@var TimeRanksCommand*/
     public $command;
     public $default;
@@ -49,9 +50,15 @@ class Main extends PluginBase{
         }else{
             $this->default = $found;
         }
-        # Data config
+        # Properties data
+        $this->data = new Config($this->getDataFolder()."data.properties", Config::PROPERTIES);
+        # Convert old data.json
         if(file_exists($this->getDataFolder()."data.json")){
-            $this->data = json_decode(file_get_contents($this->getDataFolder()."data.json"), true);
+            $data = json_decode(file_get_contents($this->getDataFolder()."data.json"), true);
+            foreach($data as $playerName => $datum){
+                $this->data->set($playerName, $datum["minutes"]);
+            }
+            @unlink($this->getDataFolder()."data.json");
         }
         # Load PurePerms
         $plugin = $this->getServer()->getPluginManager()->getPlugin("PurePerms");
@@ -72,16 +79,17 @@ class Main extends PluginBase{
         $c =  new Config($this->getDataFolder()."ranks.yml", Config::YAML);
         $c->setAll($this->ranks);
         $c->save();
-        file_put_contents($this->getDataFolder()."data.json", json_encode($this->data));
+        $this->data->save();
     }
 
     public function checkRank(Player $player){
         if(!$player->hasPermission("timeranks.exempt")){
+            $name = strtolower($player->getName());
             foreach($this->ranks as $rank => $values){
                 if(isset($values["default"])){
                     continue;
                 }
-                if($values["minutes"] == $this->data[strtolower($player->getName())]["minutes"]){
+                if($values["minutes"] == $this->data->get($name)){
                     $PPGroup = $this->purePerms->getGroup($values["pureperms_group"]);
                     if($PPGroup === null){
                         $player->sendMessage("An error occurred during RankUp. Please contact an administrator");
@@ -95,28 +103,19 @@ class Main extends PluginBase{
     }
 
     public function getRank($player){
-        if($player instanceof Player){
-            $player = strtolower($player->getName());
-        }else{
-            $player = strtolower($player);
-        }
-        if(!isset($this->data[$player]["minutes"])){
-            return $this->default;
-        }else{
-            $lowerRanks = [];
-            foreach($this->ranks as $rank => $values){
-                if(isset($values["default"])){
-                    continue;
-                }
-                if($values["minutes"] == $this->data[$player]["minutes"]){
-                    return $rank;
-                }elseif((int) $values["minutes"] < $this->data[$player]["minutes"]){
-                    $lowerRanks[$rank] = (int) $values["minutes"];
-                }
+        $lowerRanks = [];
+        foreach($this->ranks as $rank => $values){
+            if(isset($values["default"])){
+                continue;
             }
-            arsort($lowerRanks);
-            return array_keys($lowerRanks)[0];
+            if($values["minutes"] == $this->data->get($player)){
+                return $rank;
+            }elseif((int) $values["minutes"] < (int) $this->data->get($player)){
+                $lowerRanks[$rank] = (int) $values["minutes"];
+            }
         }
+        arsort($lowerRanks);
+        return array_keys($lowerRanks)[0];
     }
 
     public function onCommand(CommandSender $sender, Command $command, $label, array $args){
