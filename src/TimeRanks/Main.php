@@ -113,7 +113,9 @@ class Main extends PluginBase{
     public function onCommand(CommandSender $sender, Command $command, $label, array $args){
         if(strtolower($command->getName()) === "timeranks"){
             $this->command->run($sender, $args);
+            return true;
         }
+        return true;
     }
 
 }
