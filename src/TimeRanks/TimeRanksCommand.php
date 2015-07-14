@@ -23,15 +23,15 @@ class TimeRanksCommand{
                 if(isset($args[0])){
                     if(!$this->plugin->getServer()->getOfflinePlayer($args[0])->hasPlayedBefore()){
                         $sender->sendMessage("Player ".$args[0]." never played on this server");
-                    }else{
-                        if(!$this->plugin->data->exists(strtolower($args[0]))){
-                            $sender->sendMessage($args[0]." has played less than 1 minute on this server");
-                            $sender->sendMessage("Rank is: ".$this->plugin->default);
-                        }else{
-                            $sender->sendMessage($args[0]." has played ".$this->plugin->data->get(strtolower($args[0]))." minutes on this server");
-                            $sender->sendMessage("Rank is: ".$this->plugin->getRank(strtolower($args[0])));
-                        }
+                        return true;
                     }
+                    if(!$this->plugin->data->exists(strtolower($args[0]))){
+                        $sender->sendMessage($args[0]." has played less than 1 minute on this server");
+                        $sender->sendMessage("Rank is: ".$this->plugin->default);
+                        return true;
+                    }
+                    $sender->sendMessage($args[0]." has played ".$this->plugin->data->get(strtolower($args[0]))." minutes on this server");
+                    $sender->sendMessage("Rank is: ".$this->plugin->getRank(strtolower($args[0])));
                     return true;
                 }
                 if(!$this->plugin->data->exists(strtolower($sender->getName()))){
@@ -41,11 +41,12 @@ class TimeRanksCommand{
                     }
                     $sender->sendMessage("You have played less than 1 minute on this server");
                     $sender->sendMessage("Rank is: ".$this->plugin->default);
-                }else{
-                    $sender->sendMessage("You have played ".$this->plugin->data->get(strtolower($sender->getName()))." minutes on this server");
-                    $sender->sendMessage("Rank is: ".$this->plugin->getRank(strtolower($sender->getName())));
+                    return true;
                 }
+                $sender->sendMessage("You have played ".$this->plugin->data->get(strtolower($sender->getName()))." minutes on this server");
+                $sender->sendMessage("Rank is: ".$this->plugin->getRank(strtolower($sender->getName())));
                 return true;
+            break;
             default:
                 return false;
         }
