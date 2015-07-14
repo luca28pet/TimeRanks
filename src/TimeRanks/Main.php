@@ -23,18 +23,13 @@ class Main extends PluginBase{
     public function onEnable(){
         @mkdir($this->getDataFolder());
         # Groups config
-        $c = new Config($this->getDataFolder()."ranks.yml", Config::YAML, [
-            "DefaultRank" => [
-                "default" => true,
-                "pureperms_group" => "Default"
-            ],
-            "ExampleRank" => [
-                "minutes" => 20,
-                "pureperms_group" => "Example"
-            ]
-        ]);
-        $c->save();
-        $this->ranks = $c->getAll();
+        if(!file_exists($this->getDataFolder()."ranks.yml")){
+            $c = $this->getResource("ranks.yml");
+            $o = stream_get_contents($c);
+            fclose($c);
+            file_put_contents($this->getDataFolder()."ranks.yml", $o);
+        }
+        $this->ranks = yaml_parse(file_get_contents($this->getDataFolder()."ranks.yml"));
         # Check for default rank
         $found = false;
         foreach($this->ranks as $rank => $values){
@@ -58,7 +53,7 @@ class Main extends PluginBase{
             foreach($data as $playerName => $datum){
                 $this->data->set($playerName, $datum["minutes"]);
             }
-            @unlink($this->getDataFolder()."data.json");
+            @rename($this->getDataFolder()."data.json", $this->getDataFolder()."data_old.json");
         }
         # Load PurePerms
         $plugin = $this->getServer()->getPluginManager()->getPlugin("PurePerms");
@@ -76,9 +71,6 @@ class Main extends PluginBase{
     }
 
     public function onDisable(){
-        $c =  new Config($this->getDataFolder()."ranks.yml", Config::YAML);
-        $c->setAll($this->ranks);
-        $c->save();
         $this->data->save();
     }
 
