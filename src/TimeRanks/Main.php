@@ -33,10 +33,8 @@ class Main extends PluginBase{
         # Check for default rank
         $found = false;
         foreach($this->ranks as $rank => $values){
-            if(isset($values["default"])){
-                if($values["default"] == true){
-                    $found = $rank;
-                }
+            if(isset($values["default"]) and $values["default"] == true){
+                $found = $rank;
             }
         }
         if(!$found){
@@ -47,17 +45,8 @@ class Main extends PluginBase{
         }
         # Properties data
         $this->data = new Config($this->getDataFolder()."data.properties", Config::PROPERTIES);
-        # Convert old data.json
-        if(file_exists($this->getDataFolder()."data.json")){
-            $data = json_decode(file_get_contents($this->getDataFolder()."data.json"), true);
-            foreach($data as $playerName => $datum){
-                $this->data->set($playerName, $datum["minutes"]);
-            }
-            @rename($this->getDataFolder()."data.json", $this->getDataFolder()."data_old.json");
-        }
         # Load PurePerms
-        $plugin = $this->getServer()->getPluginManager()->getPlugin("PurePerms");
-        if($plugin instanceof Plugin){
+        if($plugin = $this->getServer()->getPluginManager()->getPlugin("PurePerms") instanceof Plugin){
             $this->purePerms = $plugin;
             $this->getLogger()->info("Successfully loaded with PurePerms");
         }else{
@@ -78,7 +67,7 @@ class Main extends PluginBase{
         if(!$player->hasPermission("timeranks.exempt")){
             $name = strtolower($player->getName());
             foreach($this->ranks as $rank => $values){
-                if(isset($values["default"])){
+                if(isset($values["default"]) and $values["default"] == true){
                     continue;
                 }
                 if($values["minutes"] == $this->data->get($name)){
@@ -97,9 +86,6 @@ class Main extends PluginBase{
     public function getRank($player){
         $lowerRanks = [];
         foreach($this->ranks as $rank => $values){
-            if(isset($values["default"])){
-                continue;
-            }
             if($values["minutes"] == $this->data->get($player)){
                 return $rank;
             }elseif((int) $values["minutes"] < (int) $this->data->get($player)){
