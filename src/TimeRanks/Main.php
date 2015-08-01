@@ -46,7 +46,7 @@ class Main extends PluginBase{
         # Properties data
         $this->data = new Config($this->getDataFolder()."data.properties", Config::PROPERTIES);
         # Load PurePerms
-        if($plugin = $this->getServer()->getPluginManager()->getPlugin("PurePerms") instanceof Plugin){
+        if(($plugin = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) instanceof Plugin){
             $this->purePerms = $plugin;
             $this->getLogger()->info("Successfully loaded with PurePerms");
         }else{
