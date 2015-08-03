@@ -65,12 +65,11 @@ class Main extends PluginBase{
 
     public function checkRank(Player $player){
         if(!$player->hasPermission("timeranks.exempt")){
-            $name = strtolower($player->getName());
             foreach($this->ranks as $rank => $values){
                 if(isset($values["default"]) and $values["default"] == true){
                     continue;
                 }
-                if($values["minutes"] == $this->data->get($name)){
+                if($values["minutes"] == $this->data->get(strtolower($player->getName()))){
                     $PPGroup = $this->purePerms->getGroup($values["pureperms_group"]);
                     if($PPGroup === null){
                         $player->sendMessage("An error occurred during RankUp. Please contact an administrator");
