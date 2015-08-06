@@ -8,6 +8,7 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
+use TimeRanks\events\PlayerRankUpEvent;
 
 class Main extends PluginBase{
 
@@ -74,8 +75,11 @@ class Main extends PluginBase{
                     if($PPGroup === null){
                         $player->sendMessage("An error occurred during RankUp. Please contact an administrator");
                     }else{
-                        $player->sendMessage("You are now rank ".$rank);
-                        $this->purePerms->setGroup($player, $PPGroup);
+                        $this->getServer()->getPluginManager()->callEvent($ev = new PlayerRankUpEvent($player, $rank, "You are now rank ".$rank));
+                        if(!$ev->isCancelled()){
+                            $player->sendMessage($ev->getMessage());
+                            $this->purePerms->setGroup($player, $PPGroup);
+                        }
                     }
                 }
             }
