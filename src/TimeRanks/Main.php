@@ -89,6 +89,9 @@ class Main extends PluginBase{
     public function getRank($player){
         $lowerRanks = [];
         foreach($this->ranks as $rank => $values){
+            if(isset($values["default"]) and $values["default"] == true){
+                $values["minutes"] = 0;
+            }
             if($values["minutes"] == $this->data->get($player)){
                 return $rank;
             }elseif((int) $values["minutes"] < (int) $this->data->get($player)){
