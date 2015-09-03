@@ -1,0 +1,11 @@
+---
+# This option allows you to use the same database on multiple server
+# That means that servers will share the same data, users will have the same minutes
+
+# If you want servers share the same data, write the same path, otherwise leave this option as default
+# Valid paths examples are:
+# On windows: "C:\TimeRanks\"
+# On Leenux: "/TimeRanks/"
+
+database-path: "{PLUGIN_DATA_FOLDER}"
+...
