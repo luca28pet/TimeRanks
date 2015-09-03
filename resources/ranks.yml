@@ -1,4 +1,8 @@
 ---
+# TimeRanks by luca28pet
+# Example of rank set-up below
+# 1 grouop needs to be the default one!
+
 DefaultRank:
   default: true
   pureperms_group: Default
