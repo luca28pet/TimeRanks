@@ -1,5 +1,5 @@
 name: TimeRanks
-main: TimeRanks\Main
+main: TimeRanks\TimeRanks
 version: 2.0.0
 api: [1.12.0]
 

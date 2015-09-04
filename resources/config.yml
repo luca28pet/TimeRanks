@@ -5,7 +5,7 @@
 # If you want servers share the same data, write the same path, otherwise leave this option as default
 # Valid paths examples are:
 # On windows: "C:\TimeRanks\"
-# On Leenux: "/TimeRanks/"
+# On Linux: "/TimeRanks/"
 
 database-path: "{PLUGIN_DATA_FOLDER}"
 ...
