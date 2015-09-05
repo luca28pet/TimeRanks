@@ -29,7 +29,7 @@ class TimeRanks extends PluginBase{
     }
 
     /**
-     * @param $playerName
+     * @param string $playerName
      * @param int $minutes
      */
     public function register($playerName, $minutes = 0){
@@ -40,7 +40,7 @@ class TimeRanks extends PluginBase{
     }
 
     /**
-     * @param $playerName
+     * @param string $playerName
      * @return int|null
      */
     public function getMinutes($playerName){
@@ -56,8 +56,8 @@ class TimeRanks extends PluginBase{
     }
 
     /**
-     * @param $playerName
-     * @param $minutes
+     * @param string $playerName
+     * @param int|string $minutes must be numeric
      * @return bool
      */
     public function setMinutes($playerName, $minutes){
@@ -78,9 +78,9 @@ class TimeRanks extends PluginBase{
     }
 
     /**
-     * @param $playerName
-     * @param $before
-     * @param $after
+     * @param string $playerName
+     * @param int|string $before must be numeric
+     * @param int|string $after must be numeric
      */
     public function checkRankUp($playerName, $before, $after){
         $old = $this->getRankFromMinutes($before);
@@ -94,7 +94,7 @@ class TimeRanks extends PluginBase{
     }
 
     /**
-     * @param $playerName
+     * @param string $playerName
      * @return null|Rank
      */
     public function getRank($playerName){
@@ -110,7 +110,7 @@ class TimeRanks extends PluginBase{
     }
 
     /**
-     * @param $minutes
+     * @param int|string $minutes must be numeric
      * @return Rank
      */
     public function getRankFromMinutes($minutes){
@@ -126,11 +126,11 @@ class TimeRanks extends PluginBase{
             }
         }
         arsort($lowerRanks);
-        return unserialize(array_keys($lowerRanks)[0]);
+        return unserialize(key($lowerRanks));
     }
 
     /**
-     * @return null|Rank
+     * @return Rank
      */
     public function getDefaultRank(){
         foreach($this->ranks as $rank){

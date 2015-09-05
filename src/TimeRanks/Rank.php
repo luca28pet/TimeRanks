@@ -26,15 +26,20 @@ class Rank{
                 throw new \Exception("Rank has not been initialized. PurePerms group ".$data["pureperms_group"]." cannot be found");
             }
             $this->default = isset($data["default"]) ? $data["default"] : false;
-
             isset($data["message"]) and $this->message = $data["message"];
             isset($data["commands"]) and $this->commands = $data["commands"];
             isset($data["blocks"]) and $this->blocks = $data["blocks"];
         }catch(\Exception $e){
-            $this->timeRanks->getLogger()->alert("Exception while loading rank: ".isset($data["name"]) ? $data["name"] : "unknown rank");
-            $this->timeRanks->getLogger()->alert("Error: ".$e->getMessage());
-            if(isset($data["name"]) and isset($this->timeRanks->ranks[$data["name"]])){
-                unset($this->timeRanks->ranks[strtolower($data["name"])]);
+            if($this->isDefault()){
+                $this->timeRanks->getLogger()->alert("Exception while loading default rank");
+                $this->timeRanks->getLogger()->alert("Error: ".$e->getMessage());
+                $this->timeRanks->getServer()->getPluginManager()->disablePlugin($this->timeRanks);
+            }else{
+                $this->timeRanks->getLogger()->alert("Exception while loading rank: ".isset($data["name"]) ? $data["name"] : "unknown rank");
+                $this->timeRanks->getLogger()->alert("Error: ".$e->getMessage());
+                if(isset($data["name"]) and isset($this->timeRanks->ranks[$data["name"]])){
+                    unset($this->timeRanks->ranks[strtolower($data["name"])]);
+                }
             }
         }
     }
