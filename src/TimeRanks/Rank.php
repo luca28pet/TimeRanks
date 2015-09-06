@@ -18,14 +18,15 @@ class Rank{
         try{
             $this->timeRanks = $timeRanks;
             $this->name = $name;
-            $this->minutes = (int) $data["minutes"];
+            $this->default = isset($data["default"]) ? $data["default"] : false;
+            $this->minutes = $this->default ? 0 : (int) $data["minutes"];
             $pureGroup = $this->timeRanks->purePerms->getGroup($data["pureperms_group"]);
             if($pureGroup !== null){
                 $this->PPGroup = $pureGroup;
             }else{
                 throw new \Exception("Rank has not been initialized. PurePerms group ".$data["pureperms_group"]." cannot be found");
             }
-            $this->default = isset($data["default"]) ? $data["default"] : false;
+
             isset($data["message"]) and $this->message = $data["message"];
             isset($data["commands"]) and $this->commands = $data["commands"];
             isset($data["blocks"]) and $this->blocks = $data["blocks"];
@@ -35,10 +36,10 @@ class Rank{
                 $this->timeRanks->getLogger()->alert("Error: ".$e->getMessage());
                 $this->timeRanks->getServer()->getPluginManager()->disablePlugin($this->timeRanks);
             }else{
-                $this->timeRanks->getLogger()->alert("Exception while loading rank: ".isset($data["name"]) ? $data["name"] : "unknown rank");
+                $this->timeRanks->getLogger()->alert("Exception while loading rank: ".$this->name);
                 $this->timeRanks->getLogger()->alert("Error: ".$e->getMessage());
-                if(isset($data["name"]) and isset($this->timeRanks->ranks[$data["name"]])){
-                    unset($this->timeRanks->ranks[strtolower($data["name"])]);
+                if(isset($this->timeRanks->ranks[strtolower($this->name)])){
+                    unset($this->timeRanks->ranks[strtolower($this->name)]);
                 }
             }
         }
