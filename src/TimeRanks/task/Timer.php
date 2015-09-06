@@ -1,8 +1,9 @@
 <?php
 
-namespace TimeRanks;
+namespace TimeRanks\task;
 
 use pocketmine\scheduler\PluginTask;
+use TimeRanks\TimeRanks;
 
 class Timer extends PluginTask{
 

@@ -1,11 +1,12 @@
 <?php
 
-namespace TimeRanks;
+namespace TimeRanks\commands;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\Player;
+use TimeRanks\TimeRanks;
 
 class TimeRanksCommand extends Command implements PluginIdentifiableCommand{
 

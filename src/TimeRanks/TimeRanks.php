@@ -5,7 +5,9 @@ namespace TimeRanks;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
+use TimeRanks\commands\TimeRanksCommand;
 use TimeRanks\event\PlayerRankUpEvent;
+use TimeRanks\task\Timer;
 
 class TimeRanks extends PluginBase{
 
@@ -30,11 +32,15 @@ class TimeRanks extends PluginBase{
 
     /**
      * @param string $playerName
-     * @param int $minutes
+     * @param int|string $minutes must be numeric
      */
     public function register($playerName, $minutes = 0){
         if($this->getMinutes($playerName) === null){
-            $this->data->exec("INSERT INTO timeranks (name, minutes) VALUES ('".$this->data->escapeString(trim(strtolower($playerName)))."', $minutes)");
+            $stmt = $this->data->prepare("INSERT INTO timeranks (name, minutes) VALUES (:name, :minutes)");
+            $stmt->bindValue(":name", trim(strtolower($playerName)), SQLITE3_TEXT);
+            $stmt->bindValue(":minutes", (int) $minutes, SQLITE3_INTEGER);
+            $stmt->execute();
+            $stmt->close();
             $this->getLogger()->debug($playerName." has been registered in TimeRanks database");
         }
     }
@@ -44,14 +50,19 @@ class TimeRanks extends PluginBase{
      * @return int|null
      */
     public function getMinutes($playerName){
-        $res = $this->data->query("SELECT minutes FROM timeranks WHERE name = '".$this->data->escapeString(trim(strtolower($playerName)))."'");
+        $stmt = $this->data->prepare("SELECT minutes FROM timeranks WHERE name = :name");
+        $stmt->bindValue(":name", trim(strtolower($playerName)), SQLITE3_TEXT);
+        $res = $stmt->execute();
         if($res instanceof \SQLite3Result){
             $array = $res->fetchArray(SQLITE3_ASSOC);
+            $stmt->close();
+            $res->finalize();
 
             $this->getLogger()->debug("Called in getMinutes($playerName) query returned: ".var_export($array)." in result: ".var_export($res));
 
             return isset($array["minutes"]) ? (int) $array["minutes"] : null;
         }
+        $stmt->close();
         return null;
     }
 
@@ -62,18 +73,26 @@ class TimeRanks extends PluginBase{
      */
     public function setMinutes($playerName, $minutes){
         $playerName = $this->data->escapeString(trim(strtolower($playerName)));
-        $res = $this->data->query("SELECT minutes FROM timeranks WHERE name = '".$playerName."'");
+        $stmt = $this->data->prepare("SELECT minutes FROM timeranks WHERE name = :name");
+        $stmt->bindValue(":name", $playerName, SQLITE3_TEXT);
+        $res = $stmt->execute();
         if($res instanceof \SQLite3Result){
             $array = $res->fetchArray(SQLITE3_ASSOC);
+            $stmt->close();
+            $res->finalize();
+            $before = isset($array["minutes"]) ? $array["minutes"] : 0;
 
             $this->getLogger()->debug("Called in setMinutes($playerName) query returned: ".var_export($array)." in result: ".var_export($res));
 
-            $before = isset($array["minutes"]) ? $array["minutes"] : 0;
-            $minutes = (int) $minutes;
-            $this->data->exec("UPDATE timeranks SET minutes = $minutes WHERE name = '".$playerName."'");
+            $stmt = $this->data->prepare("UPDATE timeranks SET minutes = :minutes WHERE name = :name");
+            $stmt->bindValue(":minutes", (int) $minutes, SQLITE3_INTEGER);
+            $stmt->bindValue(":name", $playerName, SQLITE3_TEXT);
+            $stmt->execute();
+            $stmt->close();
             $this->checkRankUp($playerName, $before, $minutes);
             return true;
         }
+        $stmt->close();
         return false;
     }
 
@@ -98,14 +117,19 @@ class TimeRanks extends PluginBase{
      * @return null|Rank
      */
     public function getRank($playerName){
-        $res = $this->data->query("SELECT minutes FROM timeranks WHERE name = '".$this->data->escapeString(trim(strtolower($playerName)))."'");
+        $stmt = $this->data->prepare("SELECT minutes FROM timeranks WHERE name = :name");
+        $stmt->bindValue(":name", trim(strtolower($playerName)), SQLITE3_TEXT);
+        $res = $stmt->execute();
         if($res instanceof \SQLite3Result){
             $array = $res->fetchArray(SQLITE3_ASSOC);
+            $stmt->close();
+            $res->finalize();
 
             $this->getLogger()->debug("Called in getRank($playerName) query returned: ".var_export($array)." in result: ".var_export($res));
 
             return isset($array["minutes"]) ? $this->getRankFromMinutes($array["minutes"]) : null;
         }
+        $stmt->close();
         return null;
     }
 
@@ -164,8 +188,27 @@ class TimeRanks extends PluginBase{
     }
 
     public function onEnable(){
-        $this->saveDefaultConfig();
+        if(($plugin = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) !== null){
+            $this->purePerms = $plugin;
+            $this->getLogger()->info("Successfully loaded with PurePerms");
+        }else{
+            $this->getLogger()->alert("Dependency PurePerms not found");
+            $this->getServer()->getPluginManager()->disablePlugin($this);
+            return;
+        }
 
+        @mkdir($dbpath = str_replace("{PLUGIN_DATA_FOLDER}", $this->getDataFolder(), $this->getConfig()->get("database-path")));
+        $this->data = new \SQLite3($dbpath."timeranks.db", file_exists($dbpath."timeranks.db") ? SQLITE3_OPEN_READWRITE : SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
+        $this->data->exec("CREATE TABLE IF NOT EXISTS timeranks (name VARCHAR(16), minutes INTEGER)");
+        if(file_exists($this->getDataFolder()."data.properties")){
+            $data = array_map("intval", (new Config($this->getDataFolder()."data.properties", Config::PROPERTIES))->getAll());
+            foreach($data as $name => $minutes){
+                $this->register($name, $minutes);
+            }
+            @rename($this->getDataFolder()."data.properties", $this->getDataFolder()."data_old.properties");
+        }
+
+        $this->saveDefaultConfig();
         $this->saveResource("ranks.yml");
         $ranks = yaml_parse_file($this->getDataFolder()."ranks.yml");
         $default = 0;
@@ -177,27 +220,6 @@ class TimeRanks extends PluginBase{
         }
         if($default !== 1){
             $this->getLogger()->alert("Default rank not found. Please specify one in the config");
-            $this->getServer()->getPluginManager()->disablePlugin($this);
-            return;
-        }
-
-        @mkdir($dbpath = str_replace("{PLUGIN_DATA_FOLDER}", $this->getDataFolder(), $this->getConfig()->get("database-path")));
-        $this->data = new \SQLite3($dbpath."timeranks.db", file_exists($dbpath."timeranks.db") ? SQLITE3_OPEN_READWRITE : SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
-        $this->data->exec("CREATE TABLE IF NOT EXISTS timeranks (name VARCHAR(16), minutes INTEGER)");
-
-        if(file_exists($this->getDataFolder()."data.properties")){
-            $data = array_map("intval", (new Config($this->getDataFolder()."data.properties", Config::PROPERTIES))->getAll());
-            foreach($data as $name => $minutes){
-                $this->register($name, $minutes);
-            }
-            @rename($this->getDataFolder()."data.properties", $this->getDataFolder()."data_old.properties");
-        }
-
-        if(($plugin = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) !== null){
-            $this->purePerms = $plugin;
-            $this->getLogger()->info("Successfully loaded with PurePerms");
-        }else{
-            $this->getLogger()->alert("Dependency PurePerms not found");
             $this->getServer()->getPluginManager()->disablePlugin($this);
             return;
         }
