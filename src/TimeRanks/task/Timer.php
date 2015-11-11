@@ -15,11 +15,15 @@ class Timer extends PluginTask{
     }
 
     public function onRun($tick){
+		$this->timeRanks->dataprovider->start_transaction();
         foreach($this->timeRanks->getServer()->getOnlinePlayers() as $p){
             if(!$p->hasPermission("timeranks.exempt")){
-                $this->timeRanks->setMinutes($p->getName(), $this->timeRanks->getMinutes($p->getName()) + 1);
-            }
+                $this->timeRanks->setMinutes($p->getName(), $this->timeRanks->getMinutes($p->getName()) + 1, true);
+            } elseif($this->timeRanks->trackAllPlayersTimes) {
+				$this->timeRanks->setMinutes($p->getName(), $this->timeRanks->getMinutes($p->getName()) + 1, false);
+			}
         }
+		$this->timeRanks->dataprovider->commit_transaction();
     }
 
 }

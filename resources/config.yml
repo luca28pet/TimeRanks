@@ -1,4 +1,27 @@
 ---
+# Timeranks Exempt Behaviour
+# Set to true to keep track of playtimes for players with timeranks.exempt
+# but disable rankup. Default value of false disables timeranks playtime also
+track-all-players-times: false
+
+# Rankup all worlds
+# Set to true if when using multiworld with pureperms you need to have rank set for all worlds
+set-all-worlds: false
+
+# Dataprovider - valid options are sqlite3, mysql
+dataprovider: sqlite3
+
+# For MySQL
+# The connection options for the MySQL database
+# Avoid using localhost - this implies a socket connection
+# rather than TCP/IP which has issues with PocketMines PHP setup
+# use 127.0.0.1 for localhost instead
+mysql-host: 127.0.0.1
+mysql-user: yourdbusername
+mysql-pass: yourdbpass
+mysql-database: yourdbname
+mysql-database_table: yourdbtable
+# For SQLLite3
 # This option allows you to use the same database on multiple server
 # That means that servers will share the same data, users will have the same minutes
 
