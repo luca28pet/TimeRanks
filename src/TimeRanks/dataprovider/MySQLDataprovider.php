@@ -120,6 +120,7 @@ class MySQLDataprovider extends \TimeRanks\dataprovider\Dataprovider {
 	// ignores (via MySQL statement) a lower minutes value than currentley held
 	private function registerorupdate($playerName, $minutes = 0) {
 		$playerName = strtolower($playerName);
+                $this->storeInCache($playerName, $minutes);
 		$statement_name = "register or update";
 		
 		$result = $this->statements[$statement_name]->bind_param ( "sii", $playerName, $minutes, $minutes );
