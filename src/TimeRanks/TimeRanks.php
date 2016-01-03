@@ -59,7 +59,7 @@ class TimeRanks extends PluginBase{
     /**
      * @param string $playerName
      * @param int|string $minutes must be numeric
-	 * @param doCheckRankUp bool
+     * @param doCheckRankUp bool
      * @return bool
      */
     public function setMinutes($playerName, $minutes, $doCheckRankUp = true){

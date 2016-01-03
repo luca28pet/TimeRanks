@@ -5,6 +5,30 @@ class MySQLDataprovider extends \TimeRanks\dataprovider\Dataprovider {
 	private $statements = array();
 	private $data;
 	private $db_table;
+        private $cache;
+        
+        public function getFromCache($playerName) {
+            $playerName = strtolower($playerName);
+            if( ! isset($this->cache[$playerName]) ) {
+                return false;
+            }
+            $cacheAge = $this->cache[$playerName]["cacheAge"];
+            $now = time();
+            $cacheIsStale = ($now - $cacheAge) > 240; // 4 mins
+            if($cacheIsStale) {
+                unset($this->cache[$playerName]);
+                return false;
+            }
+            return $this->cache[$playerName]["mins"];
+        }
+        
+        public function storeInCache($playerName, $mins) {
+            $playerName = strtolower($playerName);
+            $this->cache[$playerName] = [
+                "cacheAge" => time(),
+                "mins" => $mins
+            ];
+        }
 	
 	public function __construct(\TimeRanks\TimeRanks $plugin) {
 		$this->plugin = $plugin;
@@ -160,6 +184,10 @@ class MySQLDataprovider extends \TimeRanks\dataprovider\Dataprovider {
 	// return current minutes of player, or null on failure / not exists
 	public function getMinutes($playerName){
 		$playerName = strtolower($playerName);
+                $cached = $this->getFromCache($playerName);
+                if($cached !== false) {
+                    return $cached;
+                }
 		$statement_name = "get minutes";
 		
 		$result = $this->statements[$statement_name]->bind_param ( "s", $playerName );
@@ -197,6 +225,7 @@ class MySQLDataprovider extends \TimeRanks\dataprovider\Dataprovider {
 	
 	// wraps to registerorupdate
 	public function setMinutes($playerName, $minutes) {
+                $this->storeInCache($playerName, $minutes);
 		return $this->registerorupdate($playerName, $minutes);
 	}
 	
