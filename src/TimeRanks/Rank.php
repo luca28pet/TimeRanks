@@ -67,12 +67,14 @@ class Rank{
         foreach($this->commands as $cmd){
             $this->timeRanks->getServer()->dispatchCommand(new ConsoleCommandSender(), str_ireplace("{player}", $player->getName(), $cmd));
         }
-		$this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, null);
+		// $this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, null);
+                $this->timeRanks->purePerms->getUserDataMgr()->setGroup($player, $this->PPGroup, null);
 		$levels = $this->timeRanks->getServer()->getLevels();
 		// ensure rankup affects all levels
 		if( $this->timeRanks->readcfg("set-all-worlds" , false) != false) {
 			foreach($levels as $level){ 
-				$this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, $level->getName());
+				// $this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, $level->getName());
+                                $this->timeRanks->purePerms->getUserDataMgr()->setGroup($player, $this->PPGroup, $level->getName());
 			}
 		}
     }

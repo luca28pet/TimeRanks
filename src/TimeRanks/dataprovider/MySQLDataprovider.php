@@ -23,7 +23,7 @@ class MySQLDataprovider extends \TimeRanks\dataprovider\Dataprovider {
 	private function criticalError($errmsg) {
 		$this->plugin->getLogger()->critical($errmsg);
 		$this->plugin->getServer()->getInstance()->shutdown();
-	}
+	} 
 	
 	// (Attempt to) Prepare a statement and add the statements array
 	private function checkPreparedStatement($queryname, $sql) {
