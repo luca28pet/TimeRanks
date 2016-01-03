@@ -4,6 +4,7 @@ version: 2.0.0
 api: [1.12.0]
 
 load: POSTWORLD
+depend: [SimpleAuth]
 author: luca28pet
 description: Add easy ranks to your server
 website: https://github.com/luca28pet/TimeRanks
