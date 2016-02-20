@@ -2,72 +2,91 @@
 
 namespace TimeRanks;
 
+use _64FF00\PurePerms\PPGroup;
 use pocketmine\command\ConsoleCommandSender;
 
 class Rank{
 
-    private $timeRanks, $name, $minutes, $PPGroup, $default, $commands = [], $message, $blocks = [];
+    private $tr;
+    private $name;
+    private $default;
+    private $minutes;
+    private $ppGroup;
+    private $message;
+    private $commands;
 
-    /**
-     * @param TimeRanks $timeRanks
-     * @param $name
-     * @param array $data
-     * @throws \Exception
-     */
-    public function __construct(TimeRanks $timeRanks, $name, array $data){
-        try{
-            $this->timeRanks = $timeRanks;
-            $this->name = $name;
-            $this->default = isset($data["default"]) ? $data["default"] : false;
-            $this->minutes = $this->default ? 0 : (int) $data["minutes"];
-            $pureGroup = $this->timeRanks->purePerms->getGroup($data["pureperms_group"]);
-            if($pureGroup !== null){
-                $this->PPGroup = $pureGroup;
-            }else{
-                throw new \Exception("Rank has not been initialized. PurePerms group ".$data["pureperms_group"]." cannot be found");
-            }
+    private $pending = [];
 
-            isset($data["message"]) and $this->message = $data["message"];
-            isset($data["commands"]) and $this->commands = $data["commands"];
-            isset($data["blocks"]) and $this->blocks = $data["blocks"];
-        }catch(\Exception $e){
-            if($this->isDefault()){
-                $this->timeRanks->getLogger()->alert("Exception while loading default rank");
-                $this->timeRanks->getLogger()->alert("Error: ".$e->getMessage());
-                $this->timeRanks->getServer()->getPluginManager()->disablePlugin($this->timeRanks);
-            }else{
-                $this->timeRanks->getLogger()->alert("Exception while loading rank: ".$this->name);
-                $this->timeRanks->getLogger()->alert("Error: ".$e->getMessage());
-                if(isset($this->timeRanks->ranks[strtolower($this->name)])){
-                    unset($this->timeRanks->ranks[strtolower($this->name)]);
-                }
-            }
-        }
+    private function __construct(TimeRanks $tr, $name, $default, $minutes, PPGroup $ppGroup, $message, array $commands){
+        $this->tr = $tr;
+        $this->name = $name;
+        $this->default = $default;
+        $this->minutes = $minutes;
+        $this->ppGroup = $ppGroup;
+        $this->message = $message;
+        $this->commands = $commands;
     }
 
-    public function getName(){
-        return $this->name;
+    public function onRankUp($name){
+        $player = $this->tr->getServer()->getPlayer($name);
+        if($player === null or !$player->isOnline()){
+            $this->pending[] = $name;
+            return;
+        }
+        $this->tr->getPurePerms()->setGroup($player, $this->ppGroup);
+        $player->sendMessage($this->message);
+        foreach($this->commands as $command){
+            $this->tr->getServer()->dispatchCommand(new ConsoleCommandSender(), $command);
+        }
     }
 
     public function isDefault(){
         return $this->default;
     }
 
+    public function getName(){
+        return $this->name;
+    }
+
     public function getMinutes(){
         return $this->minutes;
     }
 
-    public function onRankUp($playerName){
-        $player = $this->timeRanks->getServer()->getPlayer($playerName);
-        if($player !== null and $player->isOnline()){
-            isset($this->message) ? $player->sendMessage($this->message) : $player->sendMessage("Congratulations, you are now rank ".$this->getName());
-        }else{
-            $player = $this->timeRanks->getServer()->getOfflinePlayer($playerName);
+    public function getGroup(){
+        return $this->ppGroup;
+    }
+
+    public function getMessage(){
+        return $this->message;
+    }
+
+    public function getCommands(){
+        return $this->commands;
+    }
+
+    public static function fromData(TimeRanks $tr, $name, $data){
+        if(!isset($data["default"])){
+            $data["default"] = false;
         }
-        foreach($this->commands as $cmd){
-            $this->timeRanks->getServer()->dispatchCommand(new ConsoleCommandSender(), str_ireplace("{player}", $player->getName(), $cmd));
+        if((!isset($data["minutes"]) and !((bool) $data["default"])) or (isset($data["minutes"]) and !is_numeric($data["minutes"]))){
+            $tr->getLogger()->alert("Rank $name failed loading, please set a valid minutes parameter");
+            return null;
         }
-        $this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, null);
+        if(((bool) $data["default"])){
+            $data["minutes"] = 0;
+        }
+        if(!isset($data["pureperms_group"]) or ($group = $tr->getPurePerms()->getGroup($data["pureperms_group"])) === null){
+            $tr->getLogger()->alert("Rank $name failed loading, please set a valid pureperms group");
+            return null;
+        }
+        if(!isset($data["message"])){
+            $tr->getLogger()->alert("Rank $name failed loading, please set a valid message parameter");
+            return null;
+        }
+        if(!isset($data["commands"]) or (isset($data["commands"]) and !is_array($data["commands"]))){
+            $data["commands"] = [];
+        }
+        return new Rank($tr, $name, (bool) $data["default"], (int) $data["minutes"], $group, $data["message"], (isset($data["commands"]) and is_array($data["commands"])) ? $data["commands"] : []);
     }
 
 }
