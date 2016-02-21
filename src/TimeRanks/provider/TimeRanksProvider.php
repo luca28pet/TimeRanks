@@ -12,4 +12,6 @@ interface TimeRanksProvider{
 
     public function setMinutes($name, $minutes);
 
+    public function close();
+
 }

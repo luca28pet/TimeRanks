@@ -5,14 +5,17 @@ namespace TimeRanks;
 use _64FF00\PurePerms\PurePerms;
 use pocketmine\plugin\PluginBase;
 use TimeRanks\provider\SQLite3Provider;
+use TimeRanks\provider\TimeRanksProvider;
 
 class TimeRanks extends PluginBase{
 
-    private $provider;
+    /** @var  TimeRanksProvider */
+    private $provider = null;
     /** @var  Rank[] */
-    private $ranks;
+    private $ranks = [];
     /** @var  PurePerms */
-    private $purePerms;
+    private $purePerms = null;
+    private $defaultRank = null;
 
     public function onEnable(){
         if(($pp = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) === null){
@@ -55,8 +58,24 @@ class TimeRanks extends PluginBase{
         }
     }
 
+    public function onDisable(){
+        $this->provider->close();
+        $this->provider = null;
+        $this->ranks = [];
+        $this->purePerms = null;
+        $this->defaultRank = null;
+    }
+
     public function getPurePerms(){
         return $this->purePerms;
+    }
+
+    public function getProvider(){
+        return $this->provider;
+    }
+
+    public function getRanks(){
+        return $this->ranks;
     }
 
     public function getRank($name){
@@ -64,6 +83,18 @@ class TimeRanks extends PluginBase{
             return $this->ranks[$name];
         }
         return null;
+    }
+
+    public function getDefaultRank(){
+        if(!($this->defaultRank instanceof Rank)){
+            foreach($this->ranks as $rank){
+                if($rank->isDefault()){
+                    $this->defaultRank = $rank;
+                    break;
+                }
+            }
+        }
+        return $this->defaultRank;
     }
 
     public function checkRankUp($name, $before, $after){
@@ -83,7 +114,7 @@ class TimeRanks extends PluginBase{
         uasort($res, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
             return $a->getMinutes() === $b->getMinutes() ? 0 : ($a->getMinutes() < $b->getMinutes()) ? 1 : -1;
         });
-        reset($res);
+        reset($res); //TODO: test if this is needed
         return current($res);
 
         /*$res = [];
