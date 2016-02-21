@@ -49,7 +49,7 @@ class TimeRanks extends PluginBase{
         $default = 0;
         foreach($this->ranks as $rank){
             if($rank->isDefault()){
-                $default += 1;
+                ++$default;
             }
         }
         if($default !== 1){
