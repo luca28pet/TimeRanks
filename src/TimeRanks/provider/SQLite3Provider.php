@@ -44,4 +44,8 @@ class SQLite3Provider implements TimeRanksProvider{
         $this->db->exec("UPDATE timeranks SET minutes = '".$minutes."' WHERE name = '".$this->db->escapeString(strtolower($name))."'");
     }
 
+    public function close(){
+        $this->db->close();
+    }
+
 }

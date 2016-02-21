@@ -27,11 +27,14 @@ class Rank{
         $this->commands = $commands;
     }
 
-    public function onRankUp($name){
+    public function onRankUp($name, $removePending = false){
         $player = $this->tr->getServer()->getPlayer($name);
         if($player === null or !$player->isOnline()){
-            $this->pending[] = $name;
+            $this->pending[strtolower($name)] = true;
             return;
+        }
+        if($removePending){
+            $this->removePending($name);
         }
         $this->tr->getPurePerms()->setGroup($player, $this->ppGroup);
         $player->sendMessage($this->message);
@@ -62,6 +65,16 @@ class Rank{
 
     public function getCommands(){
         return $this->commands;
+    }
+
+    public function isPending($name){
+        return isset($this->pending[strtolower($name)]);
+    }
+
+    public function removePending($name){
+        if($this->isPending($name)){
+            unset($this->pending[strtolower($name)]);
+        }
     }
 
     public static function fromData(TimeRanks $tr, $name, $data){
