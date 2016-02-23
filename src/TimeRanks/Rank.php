@@ -6,7 +6,7 @@ use pocketmine\command\ConsoleCommandSender;
 
 class Rank{
 
-    private $timeRanks, $name, $minutes, $PPGroup, $default, $commands = [], $message, $blocks = [];
+    private $timeRanks, $name, $minutes, $PPGroup, $default, $commands = [], $message, $blocks = [], $rankName;
 
     /**
      * @param TimeRanks $timeRanks
@@ -20,13 +20,16 @@ class Rank{
             $this->name = $name;
             $this->default = isset($data["default"]) ? $data["default"] : false;
             $this->minutes = $this->default ? 0 : (int) $data["minutes"];
+            /*
             $pureGroup = $this->timeRanks->purePerms->getGroup($data["pureperms_group"]);
             if($pureGroup !== null){
                 $this->PPGroup = $pureGroup;
             }else{
                 throw new \Exception("Rank has not been initialized. PurePerms group ".$data["pureperms_group"]." cannot be found");
             }
-
+            */
+            print_r($data);
+            $this->rankName = $data["pureperms_group"];
             isset($data["message"]) and $this->message = $data["message"];
             isset($data["commands"]) and $this->commands = $data["commands"];
             isset($data["blocks"]) and $this->blocks = $data["blocks"];
@@ -45,6 +48,10 @@ class Rank{
         }
     }
 
+    public function getRankName() {
+        return $this->rankName;
+    }
+    
     public function getName(){
         return $this->name;
     }
@@ -67,16 +74,22 @@ class Rank{
         foreach($this->commands as $cmd){
             $this->timeRanks->getServer()->dispatchCommand(new ConsoleCommandSender(), str_ireplace("{player}", $player->getName(), $cmd));
         }
-		// $this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, null);
-                $this->timeRanks->purePerms->getUserDataMgr()->setGroup($player, $this->PPGroup, null);
-		$levels = $this->timeRanks->getServer()->getLevels();
-		// ensure rankup affects all levels
-		if( $this->timeRanks->readcfg("set-all-worlds" , false) != false) {
-			foreach($levels as $level){ 
-				// $this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, $level->getName());
-                                $this->timeRanks->purePerms->getUserDataMgr()->setGroup($player, $this->PPGroup, $level->getName());
-			}
-		}
+        $buddyChannelsPlugin = $this->timeRanks->getServer()->getPluginManager()->getPlugin("BuddyChannels");
+        $buddyChannelsPlugin->setBaseRank($playerName, $this->getRankName());
+        
+        /*
+        // $this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, null);
+        $this->timeRanks->purePerms->getUserDataMgr()->setGroup($player, $this->PPGroup, null);
+        $levels = $this->timeRanks->getServer()->getLevels();
+        // ensure rankup affects all levels
+        if( $this->timeRanks->readcfg("set-all-worlds" , false) != false) {
+                foreach($levels as $level){ 
+                        // $this->timeRanks->purePerms->getUser($player)->setGroup($this->PPGroup, $level->getName());
+                        $this->timeRanks->purePerms->getUserDataMgr()->setGroup($player, $this->PPGroup, $level->getName());
+                }
+        }
+         * 
+         **/
     }
 
 }

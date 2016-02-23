@@ -1,10 +1,12 @@
 name: TimeRanks
 main: TimeRanks\TimeRanks
 version: 2.0.0
-api: [1.12.0]
+api:
+- 1.12.0
+- 2.0.0
 
 load: POSTWORLD
-depend: [SimpleAuth]
+depend: [SimpleAuth, BuddyChannels, PurePerms]
 author: luca28pet
 description: Add easy ranks to your server
 website: https://github.com/luca28pet/TimeRanks
