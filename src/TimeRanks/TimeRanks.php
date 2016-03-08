@@ -66,26 +66,29 @@ class TimeRanks extends PluginBase{
         $this->defaultRank = null;
     }
 
-    public function getPurePerms(){
+    public function getPurePerms() : PurePerms{
         return $this->purePerms;
     }
 
-    public function getProvider(){
+    public function getProvider() : TimeRanksProvider{
         return $this->provider;
     }
 
-    public function getRanks(){
+    /**
+     * @return Rank[]
+     */
+    public function getRanks() : array{
         return $this->ranks;
     }
 
-    public function getRank($name){
+    public function getRank(string $name){
         if(isset($this->ranks[$name])){
             return $this->ranks[$name];
         }
         return null;
     }
 
-    public function getDefaultRank(){
+    public function getDefaultRank() : Rank{
         if(!($this->defaultRank instanceof Rank)){
             foreach($this->ranks as $rank){
                 if($rank->isDefault()){
@@ -97,7 +100,7 @@ class TimeRanks extends PluginBase{
         return $this->defaultRank;
     }
 
-    public function checkRankUp($name, $before, $after){
+    public function checkRankUp(string $name, int $before, int $after) : bool{
         $old = $this->getRankOnMinute($before);
         $new = $this->getRankOnMinute($after);
         if($old !== $new){
@@ -107,7 +110,7 @@ class TimeRanks extends PluginBase{
         return false;
     }
 
-    public function getRankOnMinute($min){
+    public function getRankOnMinute(int $min) : Rank{
         $res = array_filter($this->ranks, function($rank) use ($min){ /** @var Rank $rank*/
             return $rank->getMinutes() <= $min;
         });
