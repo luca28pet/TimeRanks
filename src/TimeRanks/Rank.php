@@ -17,7 +17,7 @@ class Rank{
 
     private $pending = [];
 
-    private function __construct(TimeRanks $tr, $name, $default, $minutes, PPGroup $ppGroup, $message, array $commands){
+    private function __construct(TimeRanks $tr, string $name, bool $default, int $minutes, PPGroup $ppGroup, string $message, array $commands){
         $this->tr = $tr;
         $this->name = $name;
         $this->default = $default;
@@ -27,7 +27,7 @@ class Rank{
         $this->commands = $commands;
     }
 
-    public function onRankUp($name, $removePending = false){
+    public function onRankUp(string $name, bool $removePending = false) : void{
         $player = $this->tr->getServer()->getPlayer($name);
         if($player === null or !$player->isOnline()){
             $this->pending[strtolower($name)] = true;
@@ -43,41 +43,41 @@ class Rank{
         }
     }
 
-    public function isDefault(){
+    public function isDefault() : bool{
         return $this->default;
     }
 
-    public function getName(){
+    public function getName() : string{
         return $this->name;
     }
 
-    public function getMinutes(){
+    public function getMinutes() : int{
         return $this->minutes;
     }
 
-    public function getGroup(){
+    public function getGroup() : PPGroup{
         return $this->ppGroup;
     }
 
-    public function getMessage(){
+    public function getMessage() : string{
         return $this->message;
     }
 
-    public function getCommands(){
+    public function getCommands() : array{
         return $this->commands;
     }
 
-    public function isPending($name){
+    public function isPending(string $name) : bool{
         return isset($this->pending[strtolower($name)]);
     }
 
-    public function removePending($name){
+    public function removePending(string $name){
         if($this->isPending($name)){
             unset($this->pending[strtolower($name)]);
         }
     }
 
-    public static function fromData(TimeRanks $tr, $name, $data){
+    public static function fromData(TimeRanks $tr, string $name, array $data){
         if(!isset($data["default"])){
             $data["default"] = false;
         }

@@ -15,7 +15,7 @@ class SQLite3Provider implements TimeRanksProvider{
         $this->db->exec("CREATE TABLE IF NOT EXISTS timeranks (name VARCHAR(16) PRIMARY KEY, minutes INTEGER)");
     }
 
-    public function isPlayerRegistered($name){
+    public function isPlayerRegistered(string $name) : bool{
         $res = $this->db->query("SELECT * FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'");
         if($res instanceof \SQLite3Result){
             return $res->numColumns() > 0;
@@ -23,11 +23,11 @@ class SQLite3Provider implements TimeRanksProvider{
         return false;
     }
 
-    public function registerPlayer($name){
+    public function registerPlayer(string $name){
         $this->db->exec("INSERT OR IGNORE INTO timeranks (name, minutes) VALUES ('".$this->db->escapeString(strtolower($name))."', 0)");
     }
 
-    public function getMinutes($name){
+    public function getMinutes(string $name){
         $res = $this->db->query("SELECT minutes FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'");
         if($res instanceof \SQLite3Result){
             $array = $res->fetchArray(SQLITE3_ASSOC);
@@ -37,7 +37,7 @@ class SQLite3Provider implements TimeRanksProvider{
         return false;
     }
 
-    public function setMinutes($name, $minutes){
+    public function setMinutes(string $name, int $minutes){
         if(!$this->isPlayerRegistered($name)){
             $this->registerPlayer($name);
         }
