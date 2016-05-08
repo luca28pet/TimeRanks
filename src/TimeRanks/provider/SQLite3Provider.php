@@ -16,11 +16,7 @@ class SQLite3Provider implements TimeRanksProvider{
     }
 
     public function isPlayerRegistered(string $name) : bool{
-        $res = $this->db->query("SELECT * FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'");
-        if($res instanceof \SQLite3Result){
-            return $res->numColumns() > 0;
-        }
-        return false;
+        return (bool) $this->db->querySingle("SELECT * FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'");
     }
 
     public function registerPlayer(string $name){
