@@ -4,13 +4,14 @@ namespace TimeRanks;
 
 use _64FF00\PurePerms\PPGroup;
 use pocketmine\command\ConsoleCommandSender;
+use pocketmine\Player;
 
 class Rank{
 
     private $tr;
     private $name;
     private $default;
-    private $minutes;
+    public $minutes;
     private $ppGroup;
     private $message;
     private $commands;
@@ -27,14 +28,13 @@ class Rank{
         $this->commands = $commands;
     }
 
-    public function onRankUp(string $name, bool $removePending = false) : void{
-        $player = $this->tr->getServer()->getPlayer($name);
-        if($player === null or !$player->isOnline()){
-            $this->pending[strtolower($name)] = true;
+    public function onRankUp(Player $player, bool $removePending = false) : void{
+        if(!$player->isOnline()){
+            $this->pending[strtolower($player->getName())] = true;
             return;
         }
         if($removePending){
-            $this->removePending($name);
+            $this->removePending($player->getName());
         }
         $this->tr->getPurePerms()->setGroup($player, $this->ppGroup);
         $player->sendMessage($this->message);
@@ -81,11 +81,11 @@ class Rank{
         if(!isset($data["default"])){
             $data["default"] = false;
         }
-        if((!isset($data["minutes"]) and !((bool) $data["default"])) or (isset($data["minutes"]) and !is_numeric($data["minutes"]))){
+        if(!$data["default"] and (!isset($data["minutes"]) or (isset($data["minutes"]) and !is_numeric($data["minutes"])))){
             $tr->getLogger()->alert("Rank $name failed loading, please set a valid minutes parameter");
             return null;
         }
-        if(((bool) $data["default"])){
+        if($data["default"]){
             $data["minutes"] = 0;
         }
         if(!isset($data["pureperms_group"]) or ($group = $tr->getPurePerms()->getGroup($data["pureperms_group"])) === null){
@@ -99,7 +99,7 @@ class Rank{
         if(!isset($data["commands"]) or (isset($data["commands"]) and !is_array($data["commands"]))){
             $data["commands"] = [];
         }
-        return new Rank($tr, $name, (bool) $data["default"], (int) $data["minutes"], $group, $data["message"], (isset($data["commands"]) and is_array($data["commands"])) ? $data["commands"] : []);
+        return new Rank($tr, $name, $data["default"], $data["minutes"], $group, $data["message"], $data["commands"] ?? []);
     }
 
 }
