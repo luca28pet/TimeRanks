@@ -16,27 +16,24 @@ class SQLite3Provider implements TimeRanksProvider{
     }
 
     public function isPlayerRegistered(string $name) : bool{
-        return (bool) $this->db->querySingle("SELECT * FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'");
+        return $this->db->querySingle("SELECT * FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'");
     }
 
     public function registerPlayer(string $name){
         $this->db->exec("INSERT OR IGNORE INTO timeranks (name, minutes) VALUES ('".$this->db->escapeString(strtolower($name))."', 0)");
     }
 
-    public function getMinutes(string $name){
+    public function getMinutes(string $name) : int{
         $res = $this->db->query("SELECT minutes FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'");
         if($res instanceof \SQLite3Result){
             $array = $res->fetchArray(SQLITE3_ASSOC);
             $res->finalize();
-            return isset($array["minutes"]) ? (int) $array["minutes"] : false;
+            return $array["minutes"] ?? -1;
         }
-        return false;
+        return -1;
     }
 
     public function setMinutes(string $name, int $minutes){
-        if(!$this->isPlayerRegistered($name)){
-            $this->registerPlayer($name);
-        }
         $this->db->exec("UPDATE timeranks SET minutes = '".$minutes."' WHERE name = '".$this->db->escapeString(strtolower($name))."'");
     }
 

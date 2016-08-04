@@ -4,6 +4,7 @@ namespace TimeRanks;
 
 use _64FF00\PurePerms\PurePerms;
 use pocketmine\plugin\PluginBase;
+use pocketmine\Player;
 use TimeRanks\provider\SQLite3Provider;
 use TimeRanks\provider\TimeRanksProvider;
 
@@ -16,6 +17,8 @@ class TimeRanks extends PluginBase{
     /** @var  PurePerms */
     private $purePerms = null;
     private $defaultRank = null;
+    /** @var  \SplFixedArray */
+    private $minToRank;
 
     public function onEnable(){
         if(($pp = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) === null){
@@ -35,6 +38,19 @@ class TimeRanks extends PluginBase{
                 return;
         }
         $this->loadRanks();
+        uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
+            return $a->getMinutes() === $b->getMinutes() ? 0 : ($a->getMinutes() < $b->getMinutes()) ? 1 : -1;
+        });
+        $this->minToRank = new \SplFixedArray(1);
+        $index = 0;
+        foreach($this->ranks as $key => $rank){
+            if($rank->getMinutes() > 0){
+                $this->minToRank->setSize($rank->getMinutes());
+            }
+            for(; $index <= $rank->getMinutes(); $index++){
+                $this->minToRank[$index] = $this->ranks[$key];
+            }
+        }
     }
 
     private function loadRanks(){
@@ -89,7 +105,7 @@ class TimeRanks extends PluginBase{
     }
 
     public function getDefaultRank() : Rank{
-        if(!($this->defaultRank instanceof Rank)){
+        if($this->defaultRank === null){
             foreach($this->ranks as $rank){
                 if($rank->isDefault()){
                     $this->defaultRank = $rank;
@@ -100,38 +116,18 @@ class TimeRanks extends PluginBase{
         return $this->defaultRank;
     }
 
-    public function checkRankUp(string $name, int $before, int $after) : bool{
+    public function checkRankUp(Player $player, int $before, int $after) : bool{
         $old = $this->getRankOnMinute($before);
         $new = $this->getRankOnMinute($after);
         if($old !== $new){
-            $new->onRankUp($name);
+            $new->onRankUp($player);
             return true;
         }
         return false;
     }
 
     public function getRankOnMinute(int $min) : Rank{
-        $res = array_filter($this->ranks, function($rank) use ($min){ /** @var Rank $rank*/
-            return $rank->getMinutes() <= $min;
-        });
-        uasort($res, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
-            return $a->getMinutes() === $b->getMinutes() ? 0 : ($a->getMinutes() < $b->getMinutes()) ? 1 : -1;
-        });
-        reset($res); //TODO: test if this is needed
-        return current($res);
-
-        /*$res = [];
-        foreach($this->ranks as $rank){
-            if($rank->getMinutes() === $min){
-                return $rank;
-            }
-            if($rank->getMinutes() < $min){
-                $res[$rank->getMinutes()] = $rank;
-            }
-        }
-        $k = array_keys($res);
-        rsort($k);
-        return $res[$k[0]];*/
+        return $this->minToRank[$min > $this->minToRank->getSize() ? $this->minToRank->getSize() : $min];
     }
 
 }
