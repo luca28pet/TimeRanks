@@ -41,16 +41,21 @@ class TimeRanks extends PluginBase{
         uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
             return $a->getMinutes() === $b->getMinutes() ? 0 : ($a->getMinutes() < $b->getMinutes()) ? 1 : -1;
         });
-        $this->minToRank = new \SplFixedArray(1);
-        $index = 0;
+
+        $minToRank = [];
+        $prevRankName = null;
+        $prevRankMin = null;
         foreach($this->ranks as $key => $rank){
-            if($rank->getMinutes() > 0){
-                $this->minToRank->setSize($rank->getMinutes());
+            if($prevRankName !== null){
+                $minToRank = array_merge($minToRank, array_fill_keys(range($prevRankMin, $rank->getMinutes() - 1), $prevRankName));
             }
-            for(; $index <= $rank->getMinutes(); $index++){
-                $this->minToRank[$index] = $this->ranks[$key];
-            }
+            $prevRankName = $key;
+            $prevRankMin = $rank->getMinutes();
         }
+        $minToRank[$prevRankMin] = $prevRankName;
+
+        $this->minToRank = \SplFixedArray::fromArray($minToRank);
+        unset($minToRank);
     }
 
     private function loadRanks(){
@@ -127,7 +132,7 @@ class TimeRanks extends PluginBase{
     }
 
     public function getRankOnMinute(int $min) : Rank{
-        return $this->minToRank[$min > $this->minToRank->getSize() ? $this->minToRank->getSize() : $min];
+        return $this->ranks[$this->minToRank[$min >= $this->minToRank->getSize() ? $this->minToRank->getSize() - 1 : $min]];
     }
 
 }
