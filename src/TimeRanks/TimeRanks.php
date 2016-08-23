@@ -39,7 +39,7 @@ class TimeRanks extends PluginBase{
         }
         $this->loadRanks();
         uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
-            return $a->getMinutes() === $b->getMinutes() ? 0 : ($a->getMinutes() < $b->getMinutes()) ? 1 : -1;
+            return $a->getMinutes() <=> $b->getMinutes();
         });
 
         $minToRank = [];
