@@ -28,7 +28,6 @@ class Rank{
                 throw new \Exception("Rank has not been initialized. PurePerms group ".$data["pureperms_group"]." cannot be found");
             }
             */
-            print_r($data);
             $this->rankName = $data["pureperms_group"];
             isset($data["message"]) and $this->message = $data["message"];
             isset($data["commands"]) and $this->commands = $data["commands"];
