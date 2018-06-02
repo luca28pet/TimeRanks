@@ -3,136 +3,168 @@
 namespace TimeRanks;
 
 use _64FF00\PurePerms\PurePerms;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Player;
+use TimeRanks\provider\JsonProvider;
 use TimeRanks\provider\SQLite3Provider;
 use TimeRanks\provider\TimeRanksProvider;
+use TimeRanks\provider\YamlProvider;
+use TimeRanks\task\TimeTask;
 
 class TimeRanks extends PluginBase{
 
-    /** @var  TimeRanksProvider */
-    private $provider = null;
-    /** @var  Rank[] */
-    private $ranks = [];
-    /** @var  PurePerms */
-    private $purePerms = null;
-    private $defaultRank = null;
-    /** @var  \SplFixedArray */
-    private $minToRank;
+	/** @var  TimeRanksProvider */
+	private $provider = null;
+	/** @var  Rank[] */
+	private $ranks = [];
+	/** @var  PurePerms */
+	private $purePerms = null;
+	private $defaultRank = null;
+	/** @var  \SplFixedArray */
+	private $minToRank;
 
-    public function onEnable(){
-        if(($pp = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) === null){
-            $this->getLogger()->alert("TimeRanks: Dependency PurePerms not found, disabling plugin");
-            $this->getServer()->getPluginManager()->disablePlugin($this);
-            return;
-        }
-        $this->purePerms = $pp;
-        $this->saveDefaultConfig();
-        switch($this->getConfig()->get("data-provider", "sqlite3")){
-            case "sqlite3":
-                $this->provider = new SQLite3Provider($this);
-                break;
-            default:
-                $this->getLogger()->alert("Invalid TimeRanks data provider set in config.yml, disabling plugin");
-                $this->getServer()->getPluginManager()->disablePlugin($this);
-                return;
-        }
-        $this->loadRanks();
-        uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
-            return $a->getMinutes() <=> $b->getMinutes();
-        });
+	public function onEnable() : void{
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+		if(($pp = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) === null){
+			$this->getLogger()->alert("TimeRanks: Dependency PurePerms not found, disabling plugin");
+			$this->getServer()->getPluginManager()->disablePlugin($this);
+			return;
+		}
+		$this->purePerms = $pp;
+		$this->saveDefaultConfig();
+		switch($this->getConfig()->get("data-provider", "sqlite3")){
+			case "sqlite3":
+				$this->provider = new SQLite3Provider($this);
+				break;
+			case "json":
+				$this->provider = new JsonProvider($this);
+				break;
+			case "yaml":
+				$this->provider = new YamlProvider($this);
+				break;
+			default:
+				$this->getLogger()->alert("Invalid TimeRanks data provider set in config.yml, disabling plugin");
+				$this->getServer()->getPluginManager()->disablePlugin($this);
+				return;
+		}
+		$this->loadRanks();
+		uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
+			return $a->getMinutes() <=> $b->getMinutes();
+		});
 
-        $minToRank = [];
-        $prevRankName = null;
-        $prevRankMin = null;
-        foreach($this->ranks as $key => $rank){
-            if($prevRankName !== null){
-                $minToRank = array_merge($minToRank, array_fill_keys(range($prevRankMin, $rank->getMinutes() - 1), $prevRankName));
-            }
-            $prevRankName = $key;
-            $prevRankMin = $rank->getMinutes();
-        }
-        $minToRank[$prevRankMin] = $prevRankName;
+		$minToRank = [];
+		$prevRankName = null;
+		$prevRankMin = null;
+		foreach($this->ranks as $key => $rank){
+			if($prevRankName !== null){
+				$minToRank = array_merge($minToRank, array_fill_keys(range($prevRankMin, $rank->getMinutes() - 1), $prevRankName));
+			}
+			$prevRankName = $key;
+			$prevRankMin = $rank->getMinutes();
+		}
+		$minToRank[$prevRankMin] = $prevRankName;
 
-        $this->minToRank = \SplFixedArray::fromArray($minToRank);
-        unset($minToRank);
-    }
+		$this->minToRank = \SplFixedArray::fromArray($minToRank);
+		unset($minToRank);
+		$this->getServer()->getScheduler()->scheduleRepeatingTask(new TimeTask($this), 1200);
+	}
 
-    private function loadRanks(){
-        $this->saveResource("ranks.yml");
-        $ranks = yaml_parse_file($this->getDataFolder()."ranks.yml");
-        foreach($ranks as $name => $data){
-            $rank = Rank::fromData($this, $name, $data);
-            if($rank !== null){
-                $this->ranks[$name] = $rank;
-            }
-        }
-        $default = 0;
-        foreach($this->ranks as $rank){
-            if($rank->isDefault()){
-                ++$default;
-            }
-        }
-        if($default !== 1){
-            $this->getLogger()->alert("No/Too many default rank(s) set in ranks.yml, disabling plugin");
-            $this->getServer()->getPluginManager()->disablePlugin($this);
-        }
-    }
+	private function loadRanks() : void{
+		$this->saveResource("ranks.yml");
+		$ranks = yaml_parse_file($this->getDataFolder()."ranks.yml");
+		foreach($ranks as $name => $data){
+			$rank = Rank::fromData($this, $name, $data);
+			if($rank !== null){
+				$this->ranks[$name] = $rank;
+			}
+		}
+		$default = 0;
+		foreach($this->ranks as $rank){
+			if($rank->isDefault()){
+				++$default;
+			}
+		}
+		if($default !== 1){
+			$this->getLogger()->alert("No/Too many default rank(s) set in ranks.yml, disabling plugin");
+			$this->getServer()->getPluginManager()->disablePlugin($this);
+		}
+	}
 
-    public function onDisable(){
-        $this->provider->close();
-        $this->provider = null;
-        $this->ranks = [];
-        $this->purePerms = null;
-        $this->defaultRank = null;
-    }
+	public function onDisable() : void{
+		$this->provider->close();
+		$this->provider = null;
+		$this->ranks = [];
+		$this->purePerms = null;
+		$this->defaultRank = null;
+	}
 
-    public function getPurePerms() : PurePerms{
-        return $this->purePerms;
-    }
+	public function getPurePerms() : PurePerms{
+		return $this->purePerms;
+	}
 
-    public function getProvider() : TimeRanksProvider{
-        return $this->provider;
-    }
+	public function getProvider() : TimeRanksProvider{
+		return $this->provider;
+	}
 
-    /**
-     * @return Rank[]
-     */
-    public function getRanks() : array{
-        return $this->ranks;
-    }
+	/**
+	 * @return Rank[]
+	 */
+	public function getRanks() : array{
+		return $this->ranks;
+	}
 
-    public function getRank(string $name){
-        if(isset($this->ranks[$name])){
-            return $this->ranks[$name];
-        }
-        return null;
-    }
+	public function getRank(string $name) : ?Rank{
+		return $this->ranks[$name] ?? null;
+	}
 
-    public function getDefaultRank() : Rank{
-        if($this->defaultRank === null){
-            foreach($this->ranks as $rank){
-                if($rank->isDefault()){
-                    $this->defaultRank = $rank;
-                    break;
-                }
-            }
-        }
-        return $this->defaultRank;
-    }
+	public function getDefaultRank() : Rank{
+		if($this->defaultRank === null){
+			foreach($this->ranks as $rank){
+				if($rank->isDefault()){
+					$this->defaultRank = $rank;
+					break;
+				}
+			}
+		}
+		return $this->defaultRank;
+	}
 
-    public function checkRankUp(Player $player, int $before, int $after) : bool{
-        $old = $this->getRankOnMinute($before);
-        $new = $this->getRankOnMinute($after);
-        if($old !== $new){
-            $new->onRankUp($player);
-            return true;
-        }
-        return false;
-    }
+	public function getPlayerRank(string $name) : Rank{
+		return $this->getProvider()->isPlayerRegistered($name) ? $this->getRankOnMinute($this->getProvider()->getMinutes($name)) : $this->getDefaultRank();
+	}
 
-    public function getRankOnMinute(int $min) : Rank{
-        return $this->ranks[$this->minToRank[$min >= $this->minToRank->getSize() ? $this->minToRank->getSize() - 1 : $min]];
-    }
+	public function checkRankUp(Player $player, int $before, int $after) : bool{
+		$old = $this->getRankOnMinute($before);
+		$new = $this->getRankOnMinute($after);
+		if($old !== $new){
+			$new->onRankUp($player);
+			return true;
+		}
+		return false;
+	}
+
+	public function getRankOnMinute(int $min) : Rank{
+		return $this->ranks[$this->minToRank[$min >= $this->minToRank->getSize() ? $this->minToRank->getSize() - 1 : $min]];
+	}
+
+	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
+		if(isset($args[0]) and strtolower($args[0]) === "check"){
+			if(isset($args[1])){
+				if($sender->hasPermission("timeranks.command") or $sender->hasPermission("timeranks.command.self")){
+					$minutes = $this->getProvider()->getMinutes($args[1]);
+					$minutes !== -1 ? $sender->sendMessage(str_replace(["{name}", "{minutes}", "{line}", "{rank}"], [$args[1], $minutes, PHP_EOL, $this->getPlayerRank($args[1])->getName()], $this->getConfig()->get("message-player-minutes-played"))) : $sender->sendMessage(str_replace("{name}", $args[1], $this->getConfig()->get("message-player-never-played")));
+				}
+			}else{
+				if($sender->hasPermission("timeranks.command") or $sender->hasPermission("timeranks.command.others")){
+					$sender->sendMessage(str_replace(["{minutes}", "{line}", "{rank}"], [$this->getProvider()->getMinutes($sender->getName()), PHP_EOL, $this->getPlayerRank($sender->getName())->getName()], $this->getConfig()->get("message-minutes-played")));
+				}
+			}
+		}else{
+			$sender->sendMessage($this->getConfig()->get("message-usage"));
+		}
+		return true;
+	}
 
 }

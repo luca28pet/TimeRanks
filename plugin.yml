@@ -1,16 +1,26 @@
 name: TimeRanks
 main: TimeRanks\TimeRanks
-version: 2.0.0
-api: [2.0.0 , 3.0.0-ALPHA1 , 3.0.0-ALPHA2 , 3.0.0-ALPHA3]
+version: 2.1.0
+api: 3.0.0-ALPHA12
 
 load: POSTWORLD
 author: luca28pet
-description: Add easy ranks to your server
+description: Add time-based ranks to your server
 website: https://github.com/luca28pet/TimeRanks
+commands:
+  timeranks:
+    aliases: ["tr", "tranks"]
 permissions:
- timeranks.command:
-  description: "Allows to use the main command"
-  default: true
- timeranks.exempt:
-  description: "Exempt rankup"
-  default: op
+  timeranks.command:
+    description: "Allows to use the main command"
+    default: false
+    children:
+      timeranks.command.self:
+        description: "Allows to show self minutes played"
+        default: true
+      timeranks.command.others:
+        description: "Allows to show the minutes another player has played"
+        default: op
+  timeranks.exempt:
+    description: "Exempt a player from rankup"
+    default: op

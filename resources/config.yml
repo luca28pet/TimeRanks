@@ -1,3 +1,13 @@
 ---
+#choose the data provider where all data will be stored. Available: sqlite3, json, yaml
 data-provider: sqlite3
+#you can translate these messages.
+#{name}: Player's name.
+#{minutes}: The number of minutes the player has played on the server.
+#{rank}: The corresponding rank to the minutes played.
+#{line}: Adds a new line to the message.
+message-player-minutes-played: "§c{name} §ehas played §c{minutes} §eminutes on this server. {line}Rank: §c{rank}"
+message-player-never-played: "§c{name} §ehas never played on this server."
+message-minutes-played: "§eYou have played §c{minutes} §eminutes on this server. {line}Rank: §c{rank}"
+message-usage: "§eUsage: /tr check [name]"
 ...

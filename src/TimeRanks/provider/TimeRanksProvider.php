@@ -4,14 +4,14 @@ namespace TimeRanks\provider;
 
 interface TimeRanksProvider{
 
-    public function isPlayerRegistered(string $name): bool;
+	public function isPlayerRegistered(string $name): bool;
 
-    public function registerPlayer(string $name);
+	public function registerPlayer(string $name) : void;
 
-    public function getMinutes(string $name);
+	public function getMinutes(string $name) : int;
 
-    public function setMinutes(string $name, int $minutes);
+	public function setMinutes(string $name, int $minutes) : void;
 
-    public function close();
+	public function close() : void;
 
 }
