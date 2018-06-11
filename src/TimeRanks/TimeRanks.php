@@ -16,17 +16,14 @@ use TimeRanks\task\TimeTask;
 class TimeRanks extends PluginBase{
 
 	/** @var  TimeRanksProvider */
-	private $provider = null;
+	private $provider;
 	/** @var  Rank[] */
 	private $ranks = [];
 	/** @var  PurePerms */
-	private $purePerms = null;
-	private $defaultRank = null;
-	/** @var  \SplFixedArray */
-	private $minToRank;
+	private $purePerms;
+	private $defaultRank;
 
 	public function onEnable() : void{
-		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 		if(($pp = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) === null){
 			$this->getLogger()->alert("TimeRanks: Dependency PurePerms not found, disabling plugin");
 			$this->getServer()->getPluginManager()->disablePlugin($this);
@@ -49,29 +46,17 @@ class TimeRanks extends PluginBase{
 				$this->getServer()->getPluginManager()->disablePlugin($this);
 				return;
 		}
-		$this->loadRanks();
+		if(!$this->loadRanks()){
+		    return;
+        }
 		uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
-			return $a->getMinutes() <=> $b->getMinutes();
+			return $b->getMinutes() <=> $a->getMinutes();
 		});
-
-		$minToRank = [];
-		$prevRankName = null;
-		$prevRankMin = null;
-		foreach($this->ranks as $key => $rank){
-			if($prevRankName !== null){
-				$minToRank = array_merge($minToRank, array_fill_keys(range($prevRankMin, $rank->getMinutes() - 1), $prevRankName));
-			}
-			$prevRankName = $key;
-			$prevRankMin = $rank->getMinutes();
-		}
-		$minToRank[$prevRankMin] = $prevRankName;
-
-		$this->minToRank = \SplFixedArray::fromArray($minToRank);
-		unset($minToRank);
 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new TimeTask($this), 1200);
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 	}
 
-	private function loadRanks() : void{
+	private function loadRanks() : bool{
 		$this->saveResource("ranks.yml");
 		$ranks = yaml_parse_file($this->getDataFolder()."ranks.yml");
 		foreach($ranks as $name => $data){
@@ -86,10 +71,17 @@ class TimeRanks extends PluginBase{
 				++$default;
 			}
 		}
-		if($default !== 1){
-			$this->getLogger()->alert("No/Too many default rank(s) set in ranks.yml, disabling plugin");
+		if($default < 1){
+			$this->getLogger()->alert("No default rank set in ranks.yml, disabling plugin");
 			$this->getServer()->getPluginManager()->disablePlugin($this);
+			return false;
 		}
+		if($default > 1){
+            $this->getLogger()->alert("Too many default ranks set in ranks.yml, disabling plugin");
+            $this->getServer()->getPluginManager()->disablePlugin($this);
+            return false;
+        }
+        return true;
 	}
 
 	public function onDisable() : void{
@@ -136,17 +128,21 @@ class TimeRanks extends PluginBase{
 	}
 
 	public function checkRankUp(Player $player, int $before, int $after) : bool{
-		$old = $this->getRankOnMinute($before);
 		$new = $this->getRankOnMinute($after);
-		if($old !== $new){
+		if($this->getRankOnMinute($before) !== $new){
 			$new->onRankUp($player);
 			return true;
 		}
 		return false;
 	}
 
-	public function getRankOnMinute(int $min) : Rank{
-		return $this->ranks[$this->minToRank[$min >= $this->minToRank->getSize() ? $this->minToRank->getSize() - 1 : $min]];
+	public function getRankOnMinute(int $minute) : Rank{
+        foreach($this->ranks as $rank){
+            if($minute >= $rank->getMinutes()){
+                return $rank;
+            }
+        }
+        return $this->getDefaultRank();
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{

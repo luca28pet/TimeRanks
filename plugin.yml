@@ -2,7 +2,7 @@ name: TimeRanks
 main: TimeRanks\TimeRanks
 version: 2.1.0
 api: 3.0.0-ALPHA12
-
+depend: [PurePerms]
 load: POSTWORLD
 author: luca28pet
 description: Add time-based ranks to your server

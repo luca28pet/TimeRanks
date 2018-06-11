@@ -15,7 +15,7 @@ class Rank{
 	/** @var bool */
 	private $default;
 	/** @var int */
-	public $minutes;
+	private $minutes;
 	/** @var PPGroup */
 	private $ppGroup;
 	/** @var string */
@@ -40,14 +40,16 @@ class Rank{
 			$this->pending[strtolower($player->getName())] = true;
 			return;
 		}
-		if($player->hasPermission("timeranks.exempt")) return;
+        if($player->hasPermission("timeranks.exempt")){
+            return;
+        }
 		if($removePending){
 			$this->removePending($player->getName());
 		}
 		$this->tr->getPurePerms()->setGroup($player, $this->ppGroup);
 		$player->sendMessage($this->message);
 		foreach($this->commands as $command){
-			$this->tr->getServer()->dispatchCommand(new ConsoleCommandSender(), $command);
+			$this->tr->getServer()->dispatchCommand(new ConsoleCommandSender(), str_replace('{player}', $player->getName(), $command));
 		}
 	}
 
@@ -90,18 +92,18 @@ class Rank{
 			$data["default"] = false;
 		}
 		if(!$data["default"] and (!isset($data["minutes"]) or (isset($data["minutes"]) and !is_numeric($data["minutes"])))){
-			$tr->getLogger()->alert("Rank $name failed loading, please set a valid minutes parameter");
+			$tr->getLogger()->warning("Rank $name failed loading, please set a valid minutes parameter");
 			return null;
 		}
 		if($data["default"]){
 			$data["minutes"] = 0;
 		}
 		if(!isset($data["pureperms_group"]) or ($group = $tr->getPurePerms()->getGroup($data["pureperms_group"])) === null){
-			$tr->getLogger()->alert("Rank $name failed loading, please set a valid pureperms group");
+			$tr->getLogger()->warning("Rank $name failed loading, please set a valid pureperms group");
 			return null;
 		}
 		if(!$data["default"] and !isset($data["message"])){
-			$tr->getLogger()->alert("Rank $name failed loading, please set a valid message parameter");
+			$tr->getLogger()->warning("Rank $name failed loading, please set a valid message parameter");
 			return null;
 		}
 		if(!isset($data["commands"]) or (isset($data["commands"]) and !is_array($data["commands"]))){
