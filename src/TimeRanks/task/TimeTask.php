@@ -2,16 +2,15 @@
 
 namespace TimeRanks\task;
 
-use pocketmine\scheduler\PluginTask;
+use pocketmine\scheduler\Task;
 use TimeRanks\TimeRanks;
 
-class TimeTask extends PluginTask{
+class TimeTask extends Task{
 
 	/** @var TimeRanks */
 	private $tr;
 
 	public function __construct(TimeRanks $tr){
-		parent::__construct($tr);
 		$this->tr = $tr;
 	}
 

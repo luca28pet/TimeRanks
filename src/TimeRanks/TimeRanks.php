@@ -52,7 +52,7 @@ class TimeRanks extends PluginBase{
 		uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
 			return $b->getMinutes() <=> $a->getMinutes();
 		});
-		$this->getServer()->getScheduler()->scheduleRepeatingTask(new TimeTask($this), 1200);
+		$this->getScheduler()->scheduleRepeatingTask(new TimeTask($this), 1200);
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 	}
 
