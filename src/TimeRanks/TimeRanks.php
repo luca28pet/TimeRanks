@@ -31,7 +31,7 @@ class TimeRanks extends PluginBase{
 		}
 		$this->purePerms = $pp;
 		$this->saveDefaultConfig();
-		switch($this->getConfig()->get('data-provider', 'sqlite3')){
+		switch($this->getConfig()->get('data-provider', 'json')){
 			case 'sqlite3':
 				$this->provider = new SQLite3Provider($this);
 				break;
