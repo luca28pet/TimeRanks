@@ -47,13 +47,13 @@ class TimeRanks extends PluginBase{
 				return;
 		}
 		if(!$this->loadRanks()){
-		    return;
-        }
+			return;
+		}
 		uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
 			return $b->getMinutes() <=> $a->getMinutes();
 		});
 		$this->getScheduler()->scheduleRepeatingTask(new TimeTask($this), 1200);
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 	}
 
 	private function loadRanks() : bool{
@@ -77,11 +77,11 @@ class TimeRanks extends PluginBase{
 			return false;
 		}
 		if($default > 1){
-            $this->getLogger()->alert('Too many default ranks set in ranks.yml, disabling plugin');
-            $this->getServer()->getPluginManager()->disablePlugin($this);
-            return false;
-        }
-        return true;
+			$this->getLogger()->alert('Too many default ranks set in ranks.yml, disabling plugin');
+			$this->getServer()->getPluginManager()->disablePlugin($this);
+			return false;
+		}
+		return true;
 	}
 
 	public function onDisable() : void{
@@ -137,12 +137,12 @@ class TimeRanks extends PluginBase{
 	}
 
 	public function getRankOnMinute(int $minute) : Rank{
-        foreach($this->ranks as $rank){
-            if($minute >= $rank->getMinutes()){
-                return $rank;
-            }
-        }
-        return $this->getDefaultRank();
+		foreach($this->ranks as $rank){
+			if($minute >= $rank->getMinutes()){
+				return $rank;
+			}
+		}
+		return $this->getDefaultRank();
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
