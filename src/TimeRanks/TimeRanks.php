@@ -7,6 +7,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 use TimeRanks\provider\JsonProvider;
 use TimeRanks\provider\SQLite3Provider;
 use TimeRanks\provider\TimeRanksProvider;
@@ -150,11 +151,11 @@ class TimeRanks extends PluginBase{
 			if(isset($args[1])){
 				if($sender->hasPermission('timeranks.command') || $sender->hasPermission('timeranks.command.self')){
 					$minutes = $this->getProvider()->getMinutes($args[1]);
-					$minutes !== -1 ? $sender->sendMessage(str_replace(['{name}', '{minutes}', '{line}', '{rank}'], [$args[1], $minutes, PHP_EOL, $this->getPlayerRank($args[1])->getName()], $this->getConfig()->get('message-player-minutes-played'))) : $sender->sendMessage(str_replace('{name}', $args[1], $this->getConfig()->get('message-player-never-played')));
+					$minutes !== -1 ? $sender->sendMessage(str_replace(['{name}', '{minutes}', '{line}', '{rank}'], [$args[1], $minutes, TextFormat::EOL, $this->getPlayerRank($args[1])->getName()], $this->getConfig()->get('message-player-minutes-played'))) : $sender->sendMessage(str_replace('{name}', $args[1], $this->getConfig()->get('message-player-never-played')));
 				}
 			}else{
 				if($sender->hasPermission('timeranks.command') || $sender->hasPermission('timeranks.command.others')){
-					$sender->sendMessage(str_replace(['{minutes}', '{line}', '{rank}'], [$this->getProvider()->getMinutes($sender->getName()), PHP_EOL, $this->getPlayerRank($sender->getName())->getName()], $this->getConfig()->get('message-minutes-played')));
+					$sender->sendMessage(str_replace(['{minutes}', '{line}', '{rank}'], [$this->getProvider()->getMinutes($sender->getName()), TextFormat::EOL, $this->getPlayerRank($sender->getName())->getName()], $this->getConfig()->get('message-minutes-played')));
 				}
 			}
 		}else{
