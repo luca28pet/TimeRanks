@@ -40,9 +40,9 @@ class Rank{
 			$this->pending[strtolower($player->getName())] = true;
 			return;
 		}
-		if($player->hasPermission("timeranks.exempt")){
-			return;
-		}
+        if($player->hasPermission('timeranks.exempt')){
+            return;
+        }
 		if($removePending){
 			$this->removePending($player->getName());
 		}
@@ -88,28 +88,28 @@ class Rank{
 	}
 
 	public static function fromData(TimeRanks $tr, string $name, array $data) : ?Rank{
-		if(!isset($data["default"])){
-			$data["default"] = false;
+		if(!isset($data['default'])){
+			$data['default'] = false;
 		}
-		if(!$data["default"] and (!isset($data["minutes"]) or (isset($data["minutes"]) and !is_numeric($data["minutes"])))){
-			$tr->getLogger()->warning("Rank $name failed loading, please set a valid minutes parameter");
+		if(!$data['default'] && (!isset($data['minutes']) || !is_numeric($data['minutes']))){
+			$tr->getLogger()->warning('Rank '.$name.' failed loading, please set a valid minutes parameter');
 			return null;
 		}
-		if($data["default"]){
-			$data["minutes"] = 0;
+		if($data['default']){
+			$data['minutes'] = 0;
 		}
-		if(!isset($data["pureperms_group"]) or ($group = $tr->getPurePerms()->getGroup($data["pureperms_group"])) === null){
-			$tr->getLogger()->warning("Rank $name failed loading, please set a valid pureperms group");
+		if(!isset($data['pureperms_group']) || ($group = $tr->getPurePerms()->getGroup($data['pureperms_group'])) === null){
+			$tr->getLogger()->warning('Rank '.$name.' failed loading, please set a valid pureperms group');
 			return null;
 		}
-		if(!$data["default"] and !isset($data["message"])){
-			$tr->getLogger()->warning("Rank $name failed loading, please set a valid message parameter");
+		if(!$data['default'] && !isset($data['message'])){
+			$tr->getLogger()->warning('Rank '.$name.' failed loading, please set a valid message parameter');
 			return null;
 		}
-		if(!isset($data["commands"]) or (isset($data["commands"]) and !is_array($data["commands"]))){
-			$data["commands"] = [];
+		if(!isset($data['commands']) || !is_array($data['commands'])){
+			$data['commands'] = [];
 		}
-		return new Rank($tr, $name, $data["default"], $data["minutes"], $group, $data["message"] ?? "", $data["commands"] ?? []);
+		return new Rank($tr, $name, $data['default'], $data['minutes'], $group, $data['message'] ?? '', $data['commands'] ?? []);
 	}
 
 }

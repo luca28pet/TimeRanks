@@ -24,41 +24,41 @@ class TimeRanks extends PluginBase{
 	private $defaultRank;
 
 	public function onEnable() : void{
-		if(($pp = $this->getServer()->getPluginManager()->getPlugin("PurePerms")) === null){
-			$this->getLogger()->alert("TimeRanks: Dependency PurePerms not found, disabling plugin");
+		if(($pp = $this->getServer()->getPluginManager()->getPlugin('PurePerms')) === null){
+			$this->getLogger()->alert('TimeRanks: Dependency PurePerms not found, disabling plugin');
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 			return;
 		}
 		$this->purePerms = $pp;
 		$this->saveDefaultConfig();
-		switch($this->getConfig()->get("data-provider", "sqlite3")){
-			case "sqlite3":
+		switch($this->getConfig()->get('data-provider', 'sqlite3')){
+			case 'sqlite3':
 				$this->provider = new SQLite3Provider($this);
 				break;
-			case "json":
+			case 'json':
 				$this->provider = new JsonProvider($this);
 				break;
-			case "yaml":
+			case 'yaml':
 				$this->provider = new YamlProvider($this);
 				break;
 			default:
-				$this->getLogger()->alert("Invalid TimeRanks data provider set in config.yml, disabling plugin");
+				$this->getLogger()->alert('Invalid TimeRanks data provider set in config.yml, disabling plugin');
 				$this->getServer()->getPluginManager()->disablePlugin($this);
 				return;
 		}
 		if(!$this->loadRanks()){
-			return;
-		}
+		    return;
+        }
 		uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
 			return $b->getMinutes() <=> $a->getMinutes();
 		});
 		$this->getScheduler()->scheduleRepeatingTask(new TimeTask($this), 1200);
-		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 	}
 
 	private function loadRanks() : bool{
-		$this->saveResource("ranks.yml");
-		$ranks = yaml_parse_file($this->getDataFolder()."ranks.yml");
+		$this->saveResource('ranks.yml');
+		$ranks = yaml_parse_file($this->getDataFolder().'ranks.yml');
 		foreach($ranks as $name => $data){
 			$rank = Rank::fromData($this, $name, $data);
 			if($rank !== null){
@@ -72,16 +72,16 @@ class TimeRanks extends PluginBase{
 			}
 		}
 		if($default < 1){
-			$this->getLogger()->alert("No default rank set in ranks.yml, disabling plugin");
+			$this->getLogger()->alert('No default rank set in ranks.yml, disabling plugin');
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 			return false;
 		}
 		if($default > 1){
-			$this->getLogger()->alert("Too many default ranks set in ranks.yml, disabling plugin");
-			$this->getServer()->getPluginManager()->disablePlugin($this);
-			return false;
-		}
-		return true;
+            $this->getLogger()->alert('Too many default ranks set in ranks.yml, disabling plugin');
+            $this->getServer()->getPluginManager()->disablePlugin($this);
+            return false;
+        }
+        return true;
 	}
 
 	public function onDisable() : void{
@@ -137,28 +137,28 @@ class TimeRanks extends PluginBase{
 	}
 
 	public function getRankOnMinute(int $minute) : Rank{
-		foreach($this->ranks as $rank){
-			if($minute >= $rank->getMinutes()){
-				return $rank;
-			}
-		}
-		return $this->getDefaultRank();
+        foreach($this->ranks as $rank){
+            if($minute >= $rank->getMinutes()){
+                return $rank;
+            }
+        }
+        return $this->getDefaultRank();
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
-		if(isset($args[0]) and strtolower($args[0]) === "check"){
+		if(isset($args[0]) && strtolower($args[0]) === 'check'){
 			if(isset($args[1])){
-				if($sender->hasPermission("timeranks.command") or $sender->hasPermission("timeranks.command.self")){
+				if($sender->hasPermission('timeranks.command') || $sender->hasPermission('timeranks.command.self')){
 					$minutes = $this->getProvider()->getMinutes($args[1]);
-					$minutes !== -1 ? $sender->sendMessage(str_replace(["{name}", "{minutes}", "{line}", "{rank}"], [$args[1], $minutes, PHP_EOL, $this->getPlayerRank($args[1])->getName()], $this->getConfig()->get("message-player-minutes-played"))) : $sender->sendMessage(str_replace("{name}", $args[1], $this->getConfig()->get("message-player-never-played")));
+					$minutes !== -1 ? $sender->sendMessage(str_replace(['{name}', '{minutes}', '{line}', '{rank}'], [$args[1], $minutes, PHP_EOL, $this->getPlayerRank($args[1])->getName()], $this->getConfig()->get('message-player-minutes-played'))) : $sender->sendMessage(str_replace('{name}', $args[1], $this->getConfig()->get('message-player-never-played')));
 				}
 			}else{
-				if($sender->hasPermission("timeranks.command") or $sender->hasPermission("timeranks.command.others")){
-					$sender->sendMessage(str_replace(["{minutes}", "{line}", "{rank}"], [$this->getProvider()->getMinutes($sender->getName()), PHP_EOL, $this->getPlayerRank($sender->getName())->getName()], $this->getConfig()->get("message-minutes-played")));
+				if($sender->hasPermission('timeranks.command') || $sender->hasPermission('timeranks.command.others')){
+					$sender->sendMessage(str_replace(['{minutes}', '{line}', '{rank}'], [$this->getProvider()->getMinutes($sender->getName()), PHP_EOL, $this->getPlayerRank($sender->getName())->getName()], $this->getConfig()->get('message-minutes-played')));
 				}
 			}
 		}else{
-			$sender->sendMessage($this->getConfig()->get("message-usage"));
+			$sender->sendMessage($this->getConfig()->get('message-usage'));
 		}
 		return true;
 	}

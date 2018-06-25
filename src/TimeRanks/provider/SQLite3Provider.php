@@ -13,7 +13,7 @@ class SQLite3Provider implements TimeRanksProvider{
 
 	public function __construct(TimeRanks $tr){
 		$this->tr = $tr;
-		$this->db = new \SQLite3($this->tr->getDataFolder()."timeranks.db", file_exists($this->tr->getDataFolder()."timeranks.db") ? SQLITE3_OPEN_READWRITE : SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
+		$this->db = new \SQLite3($this->tr->getDataFolder().'timeranks.db', file_exists($this->tr->getDataFolder().'timeranks.db') ? SQLITE3_OPEN_READWRITE : SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE);
 		$this->db->exec("CREATE TABLE IF NOT EXISTS timeranks (name VARCHAR(16) PRIMARY KEY, minutes INTEGER)");
 	}
 
@@ -26,11 +26,9 @@ class SQLite3Provider implements TimeRanksProvider{
 	}
 
 	public function getMinutes(string $name) : int{
-		$res = $this->db->query("SELECT minutes FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'");
-		if($res instanceof \SQLite3Result){
-			$array = $res->fetchArray(SQLITE3_ASSOC);
-			$res->finalize();
-			return $array["minutes"] ?? -1;
+		$res = $this->db->querySingle("SELECT minutes FROM timeranks WHERE name = '".$this->db->escapeString(strtolower($name))."'", true);
+		if($res !== null){
+			return $res['minutes'] ?? -1;
 		}
 		return -1;
 	}

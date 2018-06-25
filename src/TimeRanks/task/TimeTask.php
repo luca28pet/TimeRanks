@@ -5,7 +5,7 @@ namespace TimeRanks\task;
 use pocketmine\scheduler\Task;
 use TimeRanks\TimeRanks;
 
-class TimeTask extends Task{
+class TimeTask extends Task {
 
 	/** @var TimeRanks */
 	private $tr;
