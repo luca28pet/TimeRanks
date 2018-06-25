@@ -40,9 +40,9 @@ class Rank{
 			$this->pending[strtolower($player->getName())] = true;
 			return;
 		}
-        if($player->hasPermission('timeranks.exempt')){
-            return;
-        }
+            if($player->hasPermission('timeranks.exempt')){
+                return;
+            }
 		if($removePending){
 			$this->removePending($player->getName());
 		}
