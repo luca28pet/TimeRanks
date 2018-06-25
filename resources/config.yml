@@ -1,6 +1,6 @@
 ---
-#choose the data provider where all data will be stored. Available: sqlite3, json, yaml
-data-provider: sqlite3
+#choose the data provider where all data will be stored. Available: json, yaml, sqlite3 (ONLY WITH APPROPRIATE PHP BINARIES)
+data-provider: json
 #you can translate these messages.
 #{name}: Player's name.
 #{minutes}: The number of minutes the player has played on the server.

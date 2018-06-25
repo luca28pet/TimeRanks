@@ -50,7 +50,7 @@ class TimeRanks extends PluginBase{
 		if(!$this->loadRanks()){
 			return;
 		}
-		uasort($this->ranks, function($a, $b){ /** @var Rank $a */ /** @var Rank $b */
+		uasort($this->ranks, function(Rank $a, Rank $b) : int{ /** @var Rank $a */ /** @var Rank $b */
 			return $b->getMinutes() <=> $a->getMinutes();
 		});
 		$this->getScheduler()->scheduleRepeatingTask(new TimeTask($this), 1200);
@@ -149,10 +149,14 @@ class TimeRanks extends PluginBase{
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 		if(isset($args[0]) && strtolower($args[0]) === 'check'){
 			if(isset($args[1])){
-				if($sender->hasPermission('timeranks.command') || $sender->hasPermission('timeranks.command.self')){
-					$minutes = $this->getProvider()->getMinutes($args[1]);
-					$minutes !== -1 ? $sender->sendMessage(str_replace(['{name}', '{minutes}', '{line}', '{rank}'], [$args[1], $minutes, TextFormat::EOL, $this->getPlayerRank($args[1])->getName()], $this->getConfig()->get('message-player-minutes-played'))) : $sender->sendMessage(str_replace('{name}', $args[1], $this->getConfig()->get('message-player-never-played')));
-				}
+			    if($sender instanceof Player){
+                    if($sender->hasPermission('timeranks.command') || $sender->hasPermission('timeranks.command.self')){
+                        $minutes = $this->getProvider()->getMinutes($args[1]);
+                        $minutes !== -1 ? $sender->sendMessage(str_replace(['{name}', '{minutes}', '{line}', '{rank}'], [$args[1], $minutes, TextFormat::EOL, $this->getPlayerRank($args[1])->getName()], $this->getConfig()->get('message-player-minutes-played'))) : $sender->sendMessage(str_replace('{name}', $args[1], $this->getConfig()->get('message-player-never-played')));
+                    }
+                }else{
+			        $sender->sendMessage('You can use the command without any arguments in-game only');
+                }
 			}else{
 				if($sender->hasPermission('timeranks.command') || $sender->hasPermission('timeranks.command.others')){
 					$sender->sendMessage(str_replace(['{minutes}', '{line}', '{rank}'], [$this->getProvider()->getMinutes($sender->getName()), TextFormat::EOL, $this->getPlayerRank($sender->getName())->getName()], $this->getConfig()->get('message-minutes-played')));
