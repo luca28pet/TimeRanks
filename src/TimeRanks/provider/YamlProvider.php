@@ -13,10 +13,10 @@ class YamlProvider implements TimeRanksProvider{
 
 	public function __construct(TimeRanks $tr){
 		$this->tr = $tr;
-		if(!file_exists($this->tr->getDataFolder() . 'timeranks.yml')){
-			yaml_emit_file($this->tr->getDataFolder() . 'timeranks.yml', []);
+		if(!file_exists($this->tr->getDataFolder().'timeranks.yml')){
+			yaml_emit_file($this->tr->getDataFolder().'timeranks.yml', []);
 		}
-		$this->data = yaml_parse_file($this->tr->getDataFolder() . 'timeranks.yml');
+		$this->data = yaml_parse_file($this->tr->getDataFolder().'timeranks.yml');
 	}
 
 	public function isPlayerRegistered(string $name) : bool{
@@ -36,7 +36,7 @@ class YamlProvider implements TimeRanksProvider{
 	}
 
 	public function close() : void{
-		yaml_emit_file($this->tr->getDataFolder() . 'timeranks.yml', $this->data);
+		yaml_emit_file($this->tr->getDataFolder().'timeranks.yml', $this->data);
 	}
 
 }

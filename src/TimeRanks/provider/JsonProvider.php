@@ -13,10 +13,10 @@ class JsonProvider implements TimeRanksProvider{
 
 	public function __construct(TimeRanks $tr){
 		$this->tr = $tr;
-		if(!file_exists($this->tr->getDataFolder() . 'timeranks.json')){
-			file_put_contents($this->tr->getDataFolder() . 'timeranks.json', json_encode([]));
+		if(!file_exists($this->tr->getDataFolder().'timeranks.json')){
+			file_put_contents($this->tr->getDataFolder().'timeranks.json', json_encode([]));
 		}
-		$this->data = json_decode(file_get_contents($this->tr->getDataFolder() . 'timeranks.json'), true);
+		$this->data = json_decode(file_get_contents($this->tr->getDataFolder().'timeranks.json'), true);
 	}
 
 	public function isPlayerRegistered(string $name) : bool{
@@ -36,7 +36,7 @@ class JsonProvider implements TimeRanksProvider{
 	}
 
 	public function close() : void{
-		file_put_contents($this->tr->getDataFolder() . 'timeranks.json', json_encode($this->data));
+		file_put_contents($this->tr->getDataFolder().'timeranks.json', json_encode($this->data));
 	}
 
 }
