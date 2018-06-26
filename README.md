@@ -4,6 +4,10 @@ TimeRanks
 A PocketMine - MP plugin that lets you easily create configurable ranks for your server. Ranks are time-based, so TimeRanks is ideal to give players a rank based on their time spent online.
 Each rank is linked to a PurePerms group, so you can give players different permissions depending on how much time they spent online.
 
+*Latest release: https://poggit.pmmp.io/p/TimeRanks/*
+
+*Latest development phars: https://poggit.pmmp.io/ci/luca28pet/TimeRanks/TimeRanks*
+
 **Configuration**
 
 TimeRanks requires a *default* rank, which is the one assigned to new players.
