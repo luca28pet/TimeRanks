@@ -1,0 +1,7 @@
+vendor/
+TimeRanks.phar
+tags
+.vimrc
+config.mk
+shaded
+

@@ -2,49 +2,100 @@ TimeRanks
 =========
 
 A PocketMine - MP plugin that lets you easily create configurable ranks for your server. Ranks are time-based, so TimeRanks is ideal to give players a rank based on their time spent online.
-Each rank is linked to a PurePerms group, so you can give players different permissions depending on how much time they spent online.
 
 *Latest release: https://poggit.pmmp.io/p/TimeRanks/*
 
 *Latest development phars: https://poggit.pmmp.io/ci/luca28pet/TimeRanks/TimeRanks*
 
-**Configuration**
+**Ranks Configuration**
 
+Ranks configuration is done inside ranks.yml.
 TimeRanks requires a *default* rank, which is the one assigned to new players.
-In the *ranks.yml* config its format is:
+This is how you add a default rank:
 ```
-DefaultRank:
+- name: "DefaultRank"
   default: true
-  pureperms_group: Default
 ```
-Note: we do not specify the 'minutes' parameter. The parameter 'pureperms_group' is the PP group we want to link to the default rank (i.e. the PP group containing the permissions you want to give to new players).
+Note: we do not specify the 'minutes' parameter.
 It has not to be called DefaultRank, you can give it any name you want.
 
-Other ranks have to be written in the *ranks.yml* like this:
+Other ranks have to be written in the _*ranks.yml*_ file, under the default rank, like this:
 ```
-ExampleRank:
+- name: "ExampleRank"
   minutes: 20
-  pureperms_group: Example
   message: "You are now rank ExampleRank"
   commands:
-  - "tell {player} You ranked up!"
+  - "tell \"{%player}\" You ranked up!"
 ```
-We specify a 'minutes' parameter (after how many minutes spent online a player will get that rank). The parameter 'pureperms_group' is the PP group we want to link to that rank.
+We must specify a 'minutes' parameter (after how many minutes spent online a player will get that rank).
+Optionally you can add a 'message', which is sent to the player, and 'commands' that get executed when the player ranks up to that rank.
 
-**Config.yml**
+An example of a complete _ranks.yml_ is:
+```
+ranks:
+  - name: "Beginner"
+    default: true
 
-In the *config.yml* you can change the data provider or translate the messages. 
-Note: you can use the sqlite3 provider only if the sqlite3 extension is included and enabled in your php binaries
+  - name: "Intermediate"
+    minutes: 120
+    message: "You have ranked up to Intermediate"
+    commands:
+    - "setgroup \"{%player}\" Intermediate"
+
+  - name: "Veteran"
+    minutes: 600
+    message: "You have ranked up to Veteran"
+    commands:
+    - "setgroup \"{%player}\" Veteran"
 ```
-#choose the data provider where all data will be stored. Available: json, yaml, sqlite3 (ONLY WITH APPROPRIATE PHP BINARIES)
-data-provider: json
-#you can translate these messages.
-#{name}: Player's name.
-#{minutes}: The number of minutes the player has played on the server.
-#{rank}: The corresponding rank to the minutes played.
-#{line}: Adds a new line to the message.
-message-player-minutes-played: "§c{name} §ehas played §c{minutes} §eminutes on this server. {line}Rank: §c{rank}"
-message-player-never-played: "§c{name} §ehas never played on this server."
-message-minutes-played: "§eYou have played §c{minutes} §eminutes on this server. {line}Rank: §c{rank}"
-message-usage: "§eUsage: /tr check [name]"
+As shown above, the 'commands' parameter can be used to integrate TimeRanks with your permissions manager plugin of choice (e.g. PurePerms).
+
+**General Configuration**
+
+In the _*config.yml*_ file you can manage other settings like how data is saved.
+The default option for data storage is SQLite, which does not require additional configuration on your part. Currently, only SQLite and MySQL are supported.
 ```
+---
+database:
+  # The database type. "sqlite" and "mysql" are supported.
+  type: sqlite
+
+  # Edit these settings only if you choose "sqlite".
+  sqlite:
+    # The file name of the database in the plugin data folder.
+    # You can also put an absolute path here.
+    file: data.sqlite
+  # Edit these settings only if you choose "mysql".
+  mysql:
+    host: 127.0.0.1
+    # Avoid using the "root" user for security reasons.
+    username: root
+    password: ""
+    schema: your_schema
+  # The maximum number of simultaneous SQL queries
+  # Recommended: 1 for sqlite, 2 for MySQL. You may want to further increase this value if your MySQL connection is very slow.
+  worker-limit: 1
+...
+
+```
+
+**Translations**
+
+You can translate all the messages, command description and usage from the _*lang.yml*_ file
+
+**Permissions**
+
+```
+permissions:
+  timeranks.command.self:
+    description: "Allows to execute /tr command and check play time"
+    default: "true"
+  timeranks.command.others:
+    description: "Allows to show the minutes another player has played"
+    default: "op"
+  timeranks.exempt:
+    description: "Exempt a player from rankup"
+    default: "op"
+
+```
+

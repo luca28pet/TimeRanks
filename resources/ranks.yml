@@ -3,13 +3,23 @@
 # Example of rank set-up below
 # 1 group needs to be the default one!
 
-DefaultRank:
-  default: true
-  pureperms_group: Default
-ExampleRank:
-  minutes: 20
-  pureperms_group: Example
-  message: "You are now rank ExampleRank"
-  commands:
-  - "tell {player} You ranked up!"
+# Note: message and commands on the default rank are ignored,
+# and are optional in all ranks
+
+ranks:
+  - name: "Beginner"
+    default: true
+
+  - name: "Intermediate"
+    minutes: 120
+    message: "You have ranked up to Intermediate"
+    commands:
+    - "setgroup \"{%player}\" Intermediate"
+
+  - name: "Veteran"
+    minutes: 600
+    message: "You have ranked up to Veteran"
+    commands:
+    - "setgroup \"{%player}\" Veteran"
 ...
+

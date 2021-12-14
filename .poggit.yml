@@ -4,4 +4,8 @@ branches:
 projects:
   TimeRanks:
     path: ""
+    libs:
+      - src: poggit/libasynql/libasynql
+        version: ^4.0.0
 ...
+

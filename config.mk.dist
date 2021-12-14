@@ -1,0 +1,5 @@
+#PHP_PM := path/to/pocketmine/php/binary
+#COMPOSER_PHAR := path/to/composer/phar
+#DEVTOOLS_PHAR := path/to/pocketmine-devtools/phar
+#SHADER_SCRIPT := path/to/composer-shader/script
+
