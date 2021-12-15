@@ -11,7 +11,10 @@ use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
 
-class TimeRanksCommand extends Command {
+/**
+ * @internal
+ */
+final class TimeRanksCommand extends Command {
 	public function __construct(
 		private TimeRanksApi $api,
 		private LangManager $langManager

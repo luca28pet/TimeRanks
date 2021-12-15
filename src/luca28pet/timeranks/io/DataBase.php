@@ -19,6 +19,7 @@ final class DataBase {
 		$this->connector->executeGeneric('timeranks.create_tables', [], function() : void {}, function(SqlError $err) : void {
 			throw $err;
 		});
+		$this->connector->waitAll();
 	}
 
 	/**

@@ -10,7 +10,7 @@ use poggit\libasynql\SqlError;
 use pocketmine\Server;
 use pocketmine\console\ConsoleCommandSender;
 
-class TimeRanksApi {
+final class TimeRanksApi {
 	/**
 	 * @param callable(?int $minutes) : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
@@ -160,10 +160,7 @@ class TimeRanksApi {
 	 * @internal
 	 */
 	public function __construct(
-		/** 
-		 * Ranks in desc order
-		 * @var Rank[]
-		 */
+		/** @var Rank[] */
 		private array $ranks,
 		private Rank $defaultRank,
 		private DataBase $dataBase,

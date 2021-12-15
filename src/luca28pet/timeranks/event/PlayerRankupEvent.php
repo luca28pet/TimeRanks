@@ -6,7 +6,7 @@ namespace luca28pet\timeranks\event;
 use pocketmine\event\Event;
 use luca28pet\timeranks\Rank;
 
-class PlayerRankupEvent extends Event {
+final class PlayerRankupEvent extends Event {
 	public function __construct(
 		private string $playerName,
 		private Rank $oldRank,
