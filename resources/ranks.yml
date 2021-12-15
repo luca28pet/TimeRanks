@@ -3,8 +3,8 @@
 # Example of rank set-up below
 # 1 group needs to be the default one!
 
-# Note: message and commands on the default rank are ignored,
-# and are optional in all ranks
+# Note: minutes, message and commands on the default rank are ignored.
+# Message and commands are optional in all ranks
 
 ranks:
   - name: "Beginner"
