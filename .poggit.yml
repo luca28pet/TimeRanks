@@ -8,4 +8,6 @@ projects:
     libs:
       - src: poggit/libasynql/libasynql
         version: ^4.0.0
+      - src: luca28pet/configparser/ConfigParser
+        version: ^1.0.0
 ...

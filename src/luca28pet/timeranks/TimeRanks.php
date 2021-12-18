@@ -9,26 +9,28 @@ use pocketmine\console\ConsoleCommandSender;
 use luca28pet\timeranks\io\DataBase;
 use luca28pet\timeranks\command\TimeRanksCommand;
 use luca28pet\timeranks\lang\LangManager;
+use luca28pet\configparser\IncompatibleConfigNodeTypeException;
 
 final class TimeRanks extends PluginBase {
 	private TimeRanksApi $api;
 
     protected function onEnable() : void {
 		$this->saveResource('ranks.yml');
-		$data = yaml_parse_file($this->getDataFolder().'ranks.yml');
-		if ($data === false) {
-			$this->getLogger()->error('Failed loading ranks.yml');
-			$this->getServer()->getPluginManager()->disablePlugin($this);
-			return;
-		}
-		if (!is_array($data) || !isset($data['ranks']) || !is_array($data['ranks'])) {
-			$this->getLogger()->error('Cannot find ranks field in ranks.yml');
-			$this->getServer()->getPluginManager()->disablePlugin($this);
-			return;
-		}
 		try {
-			$ranks = ConfigParser::getList($data['ranks'], [ConfigParser::class, 'getRank']);
-		} catch (\InvalidArgumentException $e) {
+			$data = yaml_parse_file($this->getDataFolder().'ranks.yml');
+			$ranksEntry = (new TimeRanksConfigNode($data))->getMapEntry('ranks');
+			if ($ranksEntry === null) {
+				$this->getLogger()->error('No ranks entry in ranks.yml');
+				$this->getServer()->getPluginManager()->disablePlugin($this);
+				return;
+			}
+			$ranks = array_map(fn(TimeRanksConfigNode $n) => $n->toRank(), $ranksEntry->toList());
+		} catch (\ErrorException $e) {
+			$this->getLogger()->error('Parsing of ranks.yml failed, please check YAML syntax');
+			$this->getLogger()->error('Detailed error message: '.$e->getMessage());
+			$this->getServer()->getPluginManager()->disablePlugin($this);
+			return;
+		} catch (IncompatibleConfigNodeTypeException $e) {
 			$this->getLogger()->error('Configuration error in ranks.yml');
 			do {
 				$this->getLogger()->error($e->getMessage());
@@ -45,7 +47,7 @@ final class TimeRanks extends PluginBase {
 			}
 		}
 		if ($defaultRanks !== 1) {
-			$this->getLogger()->error('Only one default rank allowed, found '.$defaultRanks);
+			$this->getLogger()->error('There must be exactly one default rank allowed, found '.$defaultRanks);
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 			return;
 		}
@@ -57,7 +59,7 @@ final class TimeRanks extends PluginBase {
 				'sqlite' => 'sqlite.sql'
 			]));
 		} catch (SqlError $err) {
-			$this->getLogger()->error('Database error');
+			$this->getLogger()->error('Database initialization error');
 			$this->getLogger()->logException($err);
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 			return;

@@ -1,8 +1,8 @@
 {
 	"name": "luca28pet/timeranks",
-	"description": "description",
+	"description": "A pocketmine-mp plugin",
 	"minimum-stability": "stable",
-	"license": "GPL-2.0",
+	"license": "AGPL-3.0-only",
 	"authors": [
 		{
 			"name": "luca28pet"
@@ -15,7 +15,8 @@
 		"pocketmine/pocketmine-mp": "^4.0.0"
 	},
 	"require": {
-		"poggit/libasynql": "4.0.0"
+		"poggit/libasynql": "4.0.0",
+		"luca28pet/configparser": "^1.0.0"
 	},
 	"repositories": [
 		{
@@ -34,6 +35,10 @@
 					}
 				}
 			}
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/luca28pet/ConfigParser.git"
 		}
 	],
 	"autoload": {
