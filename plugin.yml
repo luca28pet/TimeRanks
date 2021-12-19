@@ -7,11 +7,17 @@ author: luca28pet
 description: Add time-based ranks to your server
 website: https://github.com/luca28pet/TimeRanks
 permissions:
-  timeranks.command.self:
-    description: "Allows to execute /tr command and check play time"
+  timeranks.command.rank.self:
+    description: "Allows to execute /rank command and check play time"
     default: "true"
-  timeranks.command.others:
+  timeranks.command.rank.others:
     description: "Allows to show the minutes another player has played"
+    default: "op"
+  timeranks.command.timeranks:
+    description: "Allows to execute the /timeranks command"
+    default: "true"
+  timeranks.command.timeranksadmin:
+    description: "Allows to execute the /tradm command"
     default: "op"
   timeranks.exempt:
     description: "Exempt a player from rankup"

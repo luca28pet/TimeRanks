@@ -1,9 +1,26 @@
 <?php
+
+/* Copyright 2021 luca28pet
+ *
+ * This file is part of TimeRanks.
+ * TimeRanks is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License version 3 only,
+ * as published by the Free Software Foundation.
+ *
+ * TimeRanks is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with TimeRanks. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 declare(strict_types=1);
 
 namespace luca28pet\timeranks;
 
-use luca28pet\timeranks\event\PlayerRankupEvent;
+use luca28pet\timeranks\event\PlayerRankChangeEvent;
 use luca28pet\timeranks\io\DataBase;
 use luca28pet\timeranks\Rank;
 use poggit\libasynql\SqlError;
@@ -43,6 +60,10 @@ final class TimeRanksApi {
 			$name,
 			function(?int $oldMinutes) use ($name, $minutes, $onCompletion, $onError) : void {
 				$oldRank = self::getRankFromMinutes($oldMinutes ?? 0);
+				if ($oldMinutes === $minutes) {
+					$onCompletion();
+					return;
+				}
 				$this->dataBase->setPlayerMinutes(
 					$name,
 					$minutes,
@@ -50,9 +71,10 @@ final class TimeRanksApi {
 						if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
 							$newRank = self::getRankFromMinutes(($oldMinutes ?? 0) + $minutes);
 							if ($oldRank === $newRank) {
+								$onCompletion();
 								return;
 							}
-							(new PlayerRankupEvent($name, $oldRank, $newRank))->call();
+							(new PlayerRankChangeEvent($name, $oldRank, $newRank))->call();
 							$this->server->getPlayerExact($name)?->sendMessage($newRank->getMessage());
 							foreach ($newRank->getCommands() as $cmd) {
 								$this->server->dispatchCommand(new ConsoleCommandSender(
@@ -82,6 +104,10 @@ final class TimeRanksApi {
 		if (!mb_check_encoding($name, 'UTF-8')) {
 			throw new \InvalidArgumentException('Invalid name');
 		}
+		if ($minutes === 0) {
+			$onCompletion();
+			return;
+		}
 		$this->getPlayerMinutes(
 			$name,
 			function(?int $oldMinutes) use ($name, $minutes, $onCompletion, $onError) : void {
@@ -93,9 +119,10 @@ final class TimeRanksApi {
 						if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
 							$newRank = self::getRankFromMinutes(($oldMinutes ?? 0) + $minutes);
 							if ($oldRank === $newRank) {
+								$onCompletion();
 								return;
 							}
-							(new PlayerRankupEvent($name, $oldRank, $newRank))->call();
+							(new PlayerRankChangeEvent($name, $oldRank, $newRank))->call();
 							$this->server->getPlayerExact($name)?->sendMessage($newRank->getMessage());
 							foreach ($newRank->getCommands() as $cmd) {
 								$this->server->dispatchCommand(new ConsoleCommandSender(

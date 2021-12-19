@@ -1,89 +1,53 @@
 <?php
+
+/* Copyright 2021 luca28pet
+ *
+ * This file is part of TimeRanks.
+ * TimeRanks is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License version 3 only,
+ * as published by the Free Software Foundation.
+ *
+ * TimeRanks is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with TimeRanks. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 declare(strict_types=1);
 
 namespace luca28pet\timeranks\command;
 
 use pocketmine\command\Command;
-use luca28pet\timeranks\TimeRanksApi;
 use pocketmine\command\CommandSender;
 use luca28pet\timeranks\lang\LangManager;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\player\Player;
-use poggit\libasynql\SqlError;
+use pocketmine\plugin\PluginDescription;
 
 /**
  * @internal
  */
 final class TimeRanksCommand extends Command {
 	public function __construct(
-		private TimeRanksApi $api,
+		private PluginDescription $pluginDesc,
 		private LangManager $langManager
 	) {
 		parent::__construct(
-			'timeranks',
-			$this->langManager->getTranslation('tr-command-desc', []),
-			$this->langManager->getTranslation('tr-command-usage', []),
-			['tr']
+			$this->langManager->getTranslation('timeranks-command-name', []),
+			$this->langManager->getTranslation('timeranks-command-desc', []),
+			$this->langManager->getTranslation('timeranks-command-usage', [])
 		);
-		$this->setPermission('timeranks.command.self');
-		$this->setPermissionMessage($this->langManager->getTranslation('tr-command-no-perm', []));
+		$this->setPermission('timeranks.command.timeranks');
+		$this->setPermissionMessage($this->langManager->getTranslation('command-no-perm', []));
 	}
 
 	public function execute(CommandSender $sn, string $lbl, array $args) : void {
-		$argc = count($args);
-		if ($argc !== 1 && $argc !== 2) {
+		if (count($args) !== 0) {
 			throw new InvalidCommandSyntaxException();
 		}
-		switch ($args[0]) {
-		case 'check':
-			if (isset($args[1])) {
-				$target = $args[1];
-			} else {
-				$target = $sn->getName();
-			}
-			if ($target !== $sn->getName() && !$sn->hasPermission('timeranks.command.others')) {
-				$sn->sendMessage($this->langManager->getTranslation('tr-command-no-perm', []));
-				return;
-			}
-			if (!mb_check_encoding($target, 'UTF-8')) {
-				$sn->sendMessage('Invalid string');
-				return;
-			}
-			$this->api->getPlayerMinutes(
-				$target,
-				function(?int $minutes) use ($sn, $target) : void {
-					if ($sn instanceof Player && !$sn->isConnected()) {
-						return;
-					}
-					if ($minutes !== null) {
-						if ($sn->getName() !== $target) {
-							$sn->sendMessage($this->langManager->getTranslation('tr-command-other', [
-								'player' => $target,
-								'minutes' => (string) $minutes,
-								'rank' => $this->api->getRankFromMinutes($minutes)->getName()
-							]));
-						} else {
-							$sn->sendMessage($this->langManager->getTranslation('tr-command-self', [
-								'minutes' => (string) $minutes,
-								'rank' => $this->api->getRankFromMinutes($minutes)->getName()
-							]));
-						}
-					} else {
-						$sn->sendMessage($this->langManager->getTranslation('tr-command-player-not-found', [
-							'player' => $target
-						]));
-					}
-				},
-				function(SqlError $err) use ($sn) : void {
-					if (!($sn instanceof Player) || $sn->isConnected()) {
-						$sn->sendMessage($this->langManager->getTranslation('tr-command-fail', []));
-					}
-				}
-			);
-			break;
-		default:
-			throw new InvalidCommandSyntaxException();
-		}
+		$sn->sendMessage('TimeRanks v'.$this->pluginDesc->getVersion().' '.$this->pluginDesc->getWebsite());
 	}
 }
 

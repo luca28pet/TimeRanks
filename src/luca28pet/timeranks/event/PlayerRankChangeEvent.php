@@ -18,43 +18,31 @@
 
 declare(strict_types=1);
 
-namespace luca28pet\timeranks;
+namespace luca28pet\timeranks\event;
 
-final class Rank{
+use pocketmine\event\Event;
+use luca28pet\timeranks\Rank;
+
+/**
+ * Called when the rank of a player (online or offline) changes
+ */
+final class PlayerRankChangeEvent extends Event {
 	public function __construct(
-		private string $name,
-		private int $minutes,
-		private bool $isDefault,
-		private string $msg,
-		/** @var string[] */
-		private array $commands,
-	) {
-		if ($this->minutes < 0) {
-			throw new \InvalidArgumentException('Rank '.$this->name.' constructed with negative minutes');
-		}
+		private string $playerName,
+		private Rank $oldRank,
+		private Rank $newRank
+	) {}
+
+	public function getPlayerName() : string {
+		return $this->playerName;
 	}
 
-    public function getName() : string {
-        return $this->name;
-    }
-
-    public function getMinutes() : int {
-        return $this->minutes;
-    }
-
-	public function isDefault() : bool {
-		return $this->isDefault;
+	public function getOldRank() : Rank {
+		return $this->oldRank;
 	}
 
-	public function getMessage() : string {
-		return $this->msg;
-	}
-
-	/**
-	 * @return string[]
-	 */
-	public function getCommands() : array {
-		return $this->commands;
+	public function getNewRank() : Rank {
+		return $this->newRank;
 	}
 }
 

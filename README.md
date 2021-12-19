@@ -9,7 +9,7 @@ A PocketMine - MP plugin that lets you easily create configurable ranks for your
 
 **Ranks Configuration**
 
-Ranks configuration is done inside ranks.yml.
+Ranks configuration is done inside _ranks.yml_.
 TimeRanks requires a *default* rank, which is the one assigned to new players.
 This is how you add a default rank:
 ```
@@ -19,7 +19,7 @@ This is how you add a default rank:
 Note: we do not specify the 'minutes' parameter.
 It has not to be called DefaultRank, you can give it any name you want.
 
-Other ranks have to be written in the _*ranks.yml*_ file, under the default rank, like this:
+Other ranks have to be written in the _ranks.yml_ file, under the default rank, like this:
 ```
 - name: "ExampleRank"
   minutes: 20
@@ -52,7 +52,7 @@ As shown above, the 'commands' parameter can be used to integrate TimeRanks with
 
 **General Configuration**
 
-In the _*config.yml*_ file you can manage other settings like how data is saved.
+In the _config.yml_ file you can manage other settings like how data is saved.
 The default option for data storage is SQLite, which does not require additional configuration on your part. Currently, only SQLite and MySQL are supported.
 ```
 ---
@@ -81,21 +81,26 @@ database:
 
 **Translations**
 
-You can translate all the messages, command description and usage from the _*lang.yml*_ file
+You can translate all the messages, /tr command description and usage from the _*lang.yml*_ file
 
 **Permissions**
 
 ```
 permissions:
-  timeranks.command.self:
-    description: "Allows to execute /tr command and check play time"
+  timeranks.command.rank.self:
+    description: "Allows to execute /rank command and check play time"
     default: "true"
-  timeranks.command.others:
+  timeranks.command.rank.others:
     description: "Allows to show the minutes another player has played"
+    default: "op"
+  timeranks.command.timeranks:
+    description: "Allows to execute the /timeranks command"
+    default: "true"
+  timeranks.command.timeranksadmin:
+    description: "Allows to execute the /tradm command"
     default: "op"
   timeranks.exempt:
     description: "Exempt a player from rankup"
     default: "op"
-
 ```
 
