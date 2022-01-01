@@ -3,12 +3,14 @@
 # Example of rank set-up below
 # 1 group needs to be the default one!
 
-# Note: minutes, message and commands on the default rank are ignored.
 # Message and commands are optional in all ranks
 
 ranks:
   - name: "Beginner"
     default: true
+    message: "Your rank has been set to Beginner"
+    commands:
+    - "setgroup \"{%player}\" Beginner"
 
   - name: "Intermediate"
     minutes: 120

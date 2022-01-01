@@ -35,6 +35,9 @@ An example of a complete _ranks.yml_ is:
 ranks:
   - name: "Beginner"
     default: true
+    message: "Your rank has been set to Beginner"
+    commands:
+    - "setgroup \"{%player}\" Beginner"
 
   - name: "Intermediate"
     minutes: 120
@@ -81,7 +84,7 @@ database:
 
 **Translations**
 
-You can translate all the messages, /tr command description and usage from the _*lang.yml*_ file
+You can translate all the messages, /tr command description and usage from the _lang.yml_ file
 
 **Permissions**
 

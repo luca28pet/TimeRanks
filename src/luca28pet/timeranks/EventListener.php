@@ -1,6 +1,6 @@
 <?php
 
-/* Copyright 2021 luca28pet
+/* Copyright 2021, 2022 luca28pet
  *
  * This file is part of TimeRanks.
  * TimeRanks is free software: you can redistribute it and/or modify
@@ -25,6 +25,8 @@ use Logger;
 use luca28pet\timeranks\task\IncreaseMinutesTask;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\Listener;
+use poggit\libasynql\SqlError;
+use pocketmine\event\player\PlayerQuitEvent;
 
 /**
  * @internal
@@ -37,7 +39,21 @@ final class EventListener implements Listener {
 	) {}
 
 	public function onJoin(PlayerJoinEvent $ev) : void {
-		$this->scheduler->scheduleDelayedRepeatingTask(new IncreaseMinutesTask($this->api, $ev->getPlayer(), $this->logger), 1200, 1200);
+		$this->api->registerPlayer(
+			$ev->getPlayer()->getName(),
+			function() use ($ev) : void {
+				$this->scheduler->scheduleDelayedRepeatingTask(new IncreaseMinutesTask(
+					$this->api, $ev->getPlayer(), $this->logger), 1200, 1200);
+			},
+			function(SqlError $err) use ($ev) : void {
+				$this->logger?->error('Registration of '.$ev->getPlayer()->getName().' failed with error: '.$err->getMessage());
+				$this->logger?->logException($err);
+			}
+		);
+	}
+
+	public function onQuit(PlayerQuitEvent $ev) : void {
+		$this->api->deleteCacheEntry($ev->getPlayer()->getName());
 	}
 }
 

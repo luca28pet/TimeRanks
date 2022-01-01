@@ -1,6 +1,6 @@
 <?php
 
-/* Copyright 2021 luca28pet
+/* Copyright 2021, 2022 luca28pet
  *
  * This file is part of TimeRanks.
  * TimeRanks is free software: you can redistribute it and/or modify
@@ -62,30 +62,15 @@ final class RankCommand extends Command {
 			$sn->sendMessage('Invalid string');
 			return;
 		}
+		$cachedMinutes = $this->api->getPlayerMinutesCached($target);
+		if ($cachedMinutes !== null) {
+			$this->sendOutput($sn, $target, $cachedMinutes);
+			return;
+		}
 		$this->api->getPlayerMinutes(
 			$target,
 			function(?int $minutes) use ($sn, $target) : void {
-				if ($sn instanceof Player && !$sn->isConnected()) {
-					return;
-				}
-				if ($minutes !== null) {
-					if ($sn->getName() !== $target) {
-						$sn->sendMessage($this->langManager->getTranslation('rank-command-other', [
-							'player' => $target,
-							'minutes' => (string) $minutes,
-							'rank' => $this->api->getRankFromMinutes($minutes)->getName()
-						]));
-					} else {
-						$sn->sendMessage($this->langManager->getTranslation('rank-command-self', [
-							'minutes' => (string) $minutes,
-							'rank' => $this->api->getRankFromMinutes($minutes)->getName()
-						]));
-					}
-				} else {
-					$sn->sendMessage($this->langManager->getTranslation('rank-command-player-not-found', [
-						'player' => $target
-					]));
-				}
+				$this->sendOutput($sn, $target, $minutes);
 			},
 			function(SqlError $err) use ($sn) : void {
 				if (!($sn instanceof Player) || $sn->isConnected()) {
@@ -93,6 +78,30 @@ final class RankCommand extends Command {
 				}
 			}
 		);
+	}
+
+	private function sendOutput(CommandSender $sn, string $target, ?int $minutes) : void {
+		if ($sn instanceof Player && !$sn->isConnected()) {
+			return;
+		}
+		if ($minutes !== null) {
+			if ($sn->getName() !== $target) {
+				$sn->sendMessage($this->langManager->getTranslation('rank-command-other', [
+					'player' => $target,
+					'minutes' => (string) $minutes,
+					'rank' => $this->api->getRankFromMinutes($minutes)->getName()
+				]));
+			} else {
+				$sn->sendMessage($this->langManager->getTranslation('rank-command-self', [
+					'minutes' => (string) $minutes,
+					'rank' => $this->api->getRankFromMinutes($minutes)->getName()
+				]));
+			}
+		} else {
+			$sn->sendMessage($this->langManager->getTranslation('rank-command-player-not-found', [
+				'player' => $target
+			]));
+		}
 	}
 }
 

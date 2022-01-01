@@ -1,6 +1,6 @@
 <?php
 
-/* Copyright 2021 luca28pet
+/* Copyright 2021, 2022 luca28pet
  *
  * This file is part of TimeRanks.
  * TimeRanks is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ use luca28pet\timeranks\Rank;
 final class PlayerRankChangeEvent extends Event {
 	public function __construct(
 		private string $playerName,
-		private Rank $oldRank,
+		private ?Rank $oldRank,
 		private Rank $newRank
 	) {}
 
@@ -37,7 +37,11 @@ final class PlayerRankChangeEvent extends Event {
 		return $this->playerName;
 	}
 
-	public function getOldRank() : Rank {
+	/**
+	 * @return ?Rank the old Rank of the player or null if the player was not
+	 * registered
+	 */
+	public function getOldRank() : ?Rank {
 		return $this->oldRank;
 	}
 

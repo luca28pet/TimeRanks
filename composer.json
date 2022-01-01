@@ -15,7 +15,7 @@
 		"pocketmine/pocketmine-mp": "^4.0.0"
 	},
 	"require": {
-		"poggit/libasynql": "4.0.0",
+		"poggit/libasynql": "4.0.1",
 		"luca28pet/configparser": "^1.0.0"
 	},
 	"repositories": [
@@ -23,11 +23,11 @@
 			"type": "package",
 			"package": {
 				"name": "poggit/libasynql",
-				"version": "4.0.0",
+				"version": "4.0.1",
 				"source": {
 					"url": "https://github.com/poggit/libasynql.git",
 					"type": "git",
-					"reference": "01de5364f27711fafcc74e8e151091d6dfcbbf84"
+					"reference": "ff16029b5b650a5487576b3f1d809e293106272a"
 				},
 				"autoload": {
 					"psr-0": {
@@ -45,6 +45,10 @@
 		"psr-0": {
 			"luca28pet\\timeranks\\": "src"
 		}
+	},
+	"config": {
+		"allow-plugins": {
+			"phpstan/extension-installer": true
+		}
 	}
 }
-

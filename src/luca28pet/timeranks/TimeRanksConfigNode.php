@@ -1,6 +1,6 @@
 <?php
 
-/* Copyright 2021 luca28pet
+/* Copyright 2021, 2022 luca28pet
  *
  * This file is part of TimeRanks.
  * TimeRanks is free software: you can redistribute it and/or modify

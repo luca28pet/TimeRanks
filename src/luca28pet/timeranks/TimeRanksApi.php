@@ -1,6 +1,6 @@
 <?php
 
-/* Copyright 2021 luca28pet
+/* Copyright 2021, 2022 luca28pet
  *
  * This file is part of TimeRanks.
  * TimeRanks is free software: you can redistribute it and/or modify
@@ -28,6 +28,31 @@ use pocketmine\Server;
 use pocketmine\console\ConsoleCommandSender;
 
 final class TimeRanksApi {
+	public function getPlayerMinutesCached(string $name) : ?int {
+		if ($this->closed) {
+			throw new \BadMethodCallException('API has been destructed');
+		}
+		if (!mb_check_encoding($name, 'UTF-8')) {
+			throw new \InvalidArgumentException('Invalid name');
+		}
+		return $this->minutesCache[mb_strtolower($name, 'UTF-8')] ?? null;
+	}
+
+	public function deleteCacheEntry(string $name) : bool {
+		if ($this->closed) {
+			throw new \BadMethodCallException('API has been destructed');
+		}
+		if (!mb_check_encoding($name, 'UTF-8')) {
+			throw new \InvalidArgumentException('Invalid name');
+		}
+		$iname = mb_strtolower($name, 'UTF-8');
+		if (isset($this->minutesCache[$iname])) {
+			unset($this->minutesCache[$iname]);
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * @param callable(?int $minutes) : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
@@ -39,7 +64,54 @@ final class TimeRanksApi {
 		if (!mb_check_encoding($name, 'UTF-8')) {
 			throw new \InvalidArgumentException('Invalid name');
 		}
-		$this->dataBase->getPlayerMinutes($name, $onCompletion, $onError);
+		$this->dataBase->getPlayerMinutes($name, function(?int $minutes) use ($name, $onCompletion) : void {
+			if ($minutes !== null) {
+				$this->minutesCache[mb_strtolower($name, 'UTF-8')] = $minutes;
+			}
+			$onCompletion($minutes);
+		}, $onError);
+	}
+
+	/**
+	 * Check if the player exists in the database, if not, register the player
+	 * @param callable() : void $onCompletion
+	 * @param callable(SqlError $err) : void $onError
+	 */
+	public function registerPlayer(string $name, callable $onCompletion, callable $onError) : void {
+		if ($this->closed) {
+			throw new \BadMethodCallException('API has been destructed');
+		}
+		if (!mb_check_encoding($name, 'UTF-8')) {
+			throw new \InvalidArgumentException('Invalid name');
+		}
+		$this->getPlayerMinutes(
+			$name,
+			function(?int $minutes) use ($name, $onCompletion, $onError) : void {
+				if ($minutes !== null) {
+					//Player is already registered
+					$onCompletion();
+					return;
+				}
+				$this->dataBase->setPlayerMinutes(
+					$name,
+					0,
+					function() use ($name, $onCompletion) : void {
+						$this->minutesCache[mb_strtolower($name, 'UTF-8')] = 0;
+						if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
+							(new PlayerRankChangeEvent($name, null, $this->defaultRank))->call();
+							$this->server->getPlayerExact($name)?->sendMessage($this->defaultRank->getMessage());
+							foreach ($this->defaultRank->getCommands() as $cmd) {
+								$this->server->dispatchCommand(new ConsoleCommandSender(
+									$this->server, $this->server->getLanguage()), str_replace('{%player}', $name, $cmd));
+							}
+						}
+						$onCompletion();
+					},
+					$onError
+				);
+			},
+			$onError
+		);
 	}
 
 	/**
@@ -59,7 +131,7 @@ final class TimeRanksApi {
 		$this->getPlayerMinutes(
 			$name,
 			function(?int $oldMinutes) use ($name, $minutes, $onCompletion, $onError) : void {
-				$oldRank = self::getRankFromMinutes($oldMinutes ?? 0);
+				$oldRank = $oldMinutes === null ? null : $this->getRankFromMinutes($oldMinutes);
 				if ($oldMinutes === $minutes) {
 					$onCompletion();
 					return;
@@ -67,9 +139,10 @@ final class TimeRanksApi {
 				$this->dataBase->setPlayerMinutes(
 					$name,
 					$minutes,
-					function() use ($oldRank, $name, $oldMinutes, $minutes, $onCompletion) : void {
+					function() use ($oldRank, $name, $minutes, $onCompletion) : void {
+						$this->minutesCache[mb_strtolower($name, 'UTF-8')] = $minutes;
 						if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
-							$newRank = self::getRankFromMinutes(($oldMinutes ?? 0) + $minutes);
+							$newRank = $this->getRankFromMinutes($minutes);
 							if ($oldRank === $newRank) {
 								$onCompletion();
 								return;
@@ -111,13 +184,14 @@ final class TimeRanksApi {
 		$this->getPlayerMinutes(
 			$name,
 			function(?int $oldMinutes) use ($name, $minutes, $onCompletion, $onError) : void {
-				$oldRank = self::getRankFromMinutes($oldMinutes ?? 0);
+				$oldRank = $oldMinutes === null ? null : $this->getRankFromMinutes($oldMinutes);
 				$this->dataBase->incrementPlayerMinutes(
 					$name,
 					$minutes,
 					function() use ($oldRank, $name, $oldMinutes, $minutes, $onCompletion) : void {
+						$this->minutesCache[mb_strtolower($name, 'UTF-8')] = ($oldMinutes ?? 0) + $minutes;
 						if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
-							$newRank = self::getRankFromMinutes(($oldMinutes ?? 0) + $minutes);
+							$newRank = $this->getRankFromMinutes(($oldMinutes ?? 0) + $minutes);
 							if ($oldRank === $newRank) {
 								$onCompletion();
 								return;
@@ -138,15 +212,15 @@ final class TimeRanksApi {
 		);
 	}
 
-    /**
-     * @return Rank[] all the ranks configured by the user
-     */
-    public function getRanks() : array {
+	/**
+	 * @return Rank[] all the ranks configured by the user
+	 */
+	public function getRanks() : array {
 		if ($this->closed) {
 			throw new \BadMethodCallException('API has been destructed');
 		}
-        return $this->ranks;
-    }
+		return $this->ranks;
+	}
 
 	public function getDefaultRank() : Rank {
 		if ($this->closed) {
@@ -178,10 +252,13 @@ final class TimeRanksApi {
 	 */
 	public function close() : void {
 		$this->dataBase->close();
+		$this->minutesCache = [];
 		$this->closed = true;
 	}
 
 	private bool $closed = false;
+	/** @var array<string, int> */
+	private $minutesCache = [];
 
 	/**
 	 * @internal
