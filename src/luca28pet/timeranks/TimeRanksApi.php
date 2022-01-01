@@ -97,14 +97,7 @@ final class TimeRanksApi {
 					0,
 					function() use ($name, $onCompletion) : void {
 						$this->minutesCache[mb_strtolower($name, 'UTF-8')] = 0;
-						if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
-							(new PlayerRankChangeEvent($name, null, $this->defaultRank))->call();
-							$this->server->getPlayerExact($name)?->sendMessage($this->defaultRank->getMessage());
-							foreach ($this->defaultRank->getCommands() as $cmd) {
-								$this->server->dispatchCommand(new ConsoleCommandSender(
-									$this->server, $this->server->getLanguage()), str_replace('{%player}', $name, $cmd));
-							}
-						}
+						$this->checkRankChange($name, null, 0);
 						$onCompletion();
 					},
 					$onError
@@ -131,7 +124,6 @@ final class TimeRanksApi {
 		$this->getPlayerMinutes(
 			$name,
 			function(?int $oldMinutes) use ($name, $minutes, $onCompletion, $onError) : void {
-				$oldRank = $oldMinutes === null ? null : $this->getRankFromMinutes($oldMinutes);
 				if ($oldMinutes === $minutes) {
 					$onCompletion();
 					return;
@@ -139,21 +131,9 @@ final class TimeRanksApi {
 				$this->dataBase->setPlayerMinutes(
 					$name,
 					$minutes,
-					function() use ($oldRank, $name, $minutes, $onCompletion) : void {
+					function() use ($name, $oldMinutes, $minutes, $onCompletion) : void {
 						$this->minutesCache[mb_strtolower($name, 'UTF-8')] = $minutes;
-						if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
-							$newRank = $this->getRankFromMinutes($minutes);
-							if ($oldRank === $newRank) {
-								$onCompletion();
-								return;
-							}
-							(new PlayerRankChangeEvent($name, $oldRank, $newRank))->call();
-							$this->server->getPlayerExact($name)?->sendMessage($newRank->getMessage());
-							foreach ($newRank->getCommands() as $cmd) {
-								$this->server->dispatchCommand(new ConsoleCommandSender(
-									$this->server, $this->server->getLanguage()), str_replace('{%player}', $name, $cmd));
-							}
-						}
+						$this->checkRankChange($name, $oldMinutes, $minutes);
 						$onCompletion();
 					},
 					$onError
@@ -184,25 +164,12 @@ final class TimeRanksApi {
 		$this->getPlayerMinutes(
 			$name,
 			function(?int $oldMinutes) use ($name, $minutes, $onCompletion, $onError) : void {
-				$oldRank = $oldMinutes === null ? null : $this->getRankFromMinutes($oldMinutes);
 				$this->dataBase->incrementPlayerMinutes(
 					$name,
 					$minutes,
-					function() use ($oldRank, $name, $oldMinutes, $minutes, $onCompletion) : void {
+					function() use ($name, $oldMinutes, $minutes, $onCompletion) : void {
 						$this->minutesCache[mb_strtolower($name, 'UTF-8')] = ($oldMinutes ?? 0) + $minutes;
-						if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
-							$newRank = $this->getRankFromMinutes(($oldMinutes ?? 0) + $minutes);
-							if ($oldRank === $newRank) {
-								$onCompletion();
-								return;
-							}
-							(new PlayerRankChangeEvent($name, $oldRank, $newRank))->call();
-							$this->server->getPlayerExact($name)?->sendMessage($newRank->getMessage());
-							foreach ($newRank->getCommands() as $cmd) {
-								$this->server->dispatchCommand(new ConsoleCommandSender(
-									$this->server, $this->server->getLanguage()), str_replace('{%player}', $name, $cmd));
-							}
-						}
+						$this->checkRankChange($name, $oldMinutes, ($oldMinutes ?? 0) + $minutes);
 						$onCompletion();
 					},
 					$onError
@@ -259,6 +226,22 @@ final class TimeRanksApi {
 	private bool $closed = false;
 	/** @var array<string, int> */
 	private $minutesCache = [];
+
+	private function checkRankChange(string $name, ?int $oldMinutes, int $newMinutes) : void {
+		$oldRank = $oldMinutes === null ? null : $this->getRankFromMinutes($oldMinutes);
+		$newRank = $this->getRankFromMinutes($newMinutes);
+		if ($oldRank === $newRank) {
+			return;
+		}
+		if ($this->server->getPlayerExact($name)?->hasPermission('timeranks.exempt') !== true) {
+			(new PlayerRankChangeEvent($name, $oldRank, $newRank))->call();
+			$this->server->getPlayerExact($name)?->sendMessage($newRank->getMessage());
+			foreach ($newRank->getCommands() as $cmd) {
+				$this->server->dispatchCommand(new ConsoleCommandSender(
+					$this->server, $this->server->getLanguage()), str_replace('{%player}', $name, $cmd));
+			}
+		}
+	}
 
 	/**
 	 * @internal
