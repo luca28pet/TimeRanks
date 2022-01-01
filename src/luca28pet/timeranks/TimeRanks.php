@@ -34,7 +34,7 @@ use luca28pet\timeranks\command\TimeRanksAdminCommand;
 final class TimeRanks extends PluginBase {
 	private TimeRanksApi $api;
 
-    protected function onEnable() : void {
+	protected function onEnable() : void {
 		$this->saveResource('ranks.yml');
 		try {
 			$data = yaml_parse_file($this->getDataFolder().'ranks.yml');
@@ -93,13 +93,13 @@ final class TimeRanks extends PluginBase {
 		$this->getServer()->getCommandMap()->register($this->getName(), new TimeRanksCommand($this->getDescription(), $langManager));
 		$this->getServer()->getCommandMap()->register($this->getName(), new RankCommand($this->api, $langManager));
 		$this->getServer()->getCommandMap()->register($this->getName(), new TimeRanksAdminCommand($this->api));
-    }
+	}
 
-    protected function onDisable() : void {
+	protected function onDisable() : void {
 		if (isset($this->api)) {
 			$this->api->close();
 		}
-    }
+	}
 
 	public function getApi() : TimeRanksApi {
 		return $this->api;
