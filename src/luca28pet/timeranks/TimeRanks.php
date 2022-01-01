@@ -90,9 +90,9 @@ final class TimeRanks extends PluginBase {
 
 		$langManager = new LangManager($this->getDataFolder().'lang.yml', $this->getLogger());
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this->getScheduler(), $this->api, $this->getLogger()), $this);
-		$this->getServer()->getCommandMap()->register($this->getName(), new TimeRanksCommand($this->getDescription(), $langManager));
-		$this->getServer()->getCommandMap()->register($this->getName(), new RankCommand($this->api, $langManager));
-		$this->getServer()->getCommandMap()->register($this->getName(), new TimeRanksAdminCommand($this->api));
+		$this->getServer()->getCommandMap()->register($this->getName(), new TimeRanksCommand($langManager, $this));
+		$this->getServer()->getCommandMap()->register($this->getName(), new RankCommand($this->api, $langManager, $this));
+		$this->getServer()->getCommandMap()->register($this->getName(), new TimeRanksAdminCommand($this->api, $this));
 	}
 
 	protected function onDisable() : void {

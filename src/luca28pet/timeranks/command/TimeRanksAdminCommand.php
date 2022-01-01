@@ -27,13 +27,16 @@ use luca28pet\timeranks\lang\LangManager;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
+use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginOwned;
 
 /**
  * @internal
  */
-final class TimeRanksAdminCommand extends Command {
+final class TimeRanksAdminCommand extends Command implements PluginOwned {
 	public function __construct(
-		private TimeRanksApi $api
+		private TimeRanksApi $api,
+		private Plugin $plugin
 	) {
 		parent::__construct(
 			'timeranksadmin',
@@ -87,6 +90,10 @@ final class TimeRanksAdminCommand extends Command {
 		default:
 			throw new InvalidCommandSyntaxException();
 		}
+	}
+
+	public function getOwningPlugin() : Plugin {
+		return $this->plugin;
 	}
 }
 

@@ -25,14 +25,16 @@ use pocketmine\command\CommandSender;
 use luca28pet\timeranks\lang\LangManager;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\plugin\PluginDescription;
+use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginOwned;
 
 /**
  * @internal
  */
-final class TimeRanksCommand extends Command {
+final class TimeRanksCommand extends Command implements PluginOwned {
 	public function __construct(
-		private PluginDescription $pluginDesc,
-		private LangManager $langManager
+		private LangManager $langManager,
+		private Plugin $plugin
 	) {
 		parent::__construct(
 			$this->langManager->getTranslation('timeranks-command-name', []),
@@ -47,7 +49,11 @@ final class TimeRanksCommand extends Command {
 		if (count($args) !== 0) {
 			throw new InvalidCommandSyntaxException();
 		}
-		$sn->sendMessage('TimeRanks v'.$this->pluginDesc->getVersion().' '.$this->pluginDesc->getWebsite());
+		$sn->sendMessage('TimeRanks v'.$this->plugin->getDescription()->getVersion().' '.$this->plugin->getDescription()->getWebsite());
+	}
+
+	public function getOwningPlugin() : Plugin {
+		return $this->plugin;
 	}
 }
 
