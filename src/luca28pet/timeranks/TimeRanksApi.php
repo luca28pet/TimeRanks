@@ -26,25 +26,33 @@ use luca28pet\timeranks\Rank;
 use poggit\libasynql\SqlError;
 use pocketmine\Server;
 use pocketmine\console\ConsoleCommandSender;
+use luca28pet\timeranks\util\Utils;
+use luca28pet\timeranks\util\InvalidPlayerNameException;
 
 final class TimeRanksApi {
+	/**
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
+	 * @return ?int null or a non-negative integer
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
+	 */
 	public function getPlayerMinutesCached(string $name) : ?int {
 		if ($this->closed) {
 			throw new \BadMethodCallException('API has been destructed');
 		}
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
-		}
+		Utils::validatePlayerName($name);
 		return $this->minutesCache[mb_strtolower($name, 'UTF-8')] ?? null;
 	}
 
+	/**
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
+	 * @return bool true if $name was cached, false otherwise
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
+	 */
 	public function deleteCacheEntry(string $name) : bool {
 		if ($this->closed) {
 			throw new \BadMethodCallException('API has been destructed');
 		}
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
-		}
+		Utils::validatePlayerName($name);
 		$iname = mb_strtolower($name, 'UTF-8');
 		if (isset($this->minutesCache[$iname])) {
 			unset($this->minutesCache[$iname]);
@@ -54,15 +62,14 @@ final class TimeRanksApi {
 	}
 
 	/**
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
 	 * @param callable(?int $minutes) : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
 	 */
 	public function getPlayerMinutes(string $name, callable $onCompletion, callable $onError) : void {
 		if ($this->closed) {
 			throw new \BadMethodCallException('API has been destructed');
-		}
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
 		}
 		$this->dataBase->getPlayerMinutes($name, function(?int $minutes) use ($name, $onCompletion) : void {
 			if ($minutes !== null) {
@@ -74,15 +81,14 @@ final class TimeRanksApi {
 
 	/**
 	 * Check if the player exists in the database, if not, register the player
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
 	 * @param callable() : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
 	 */
 	public function registerPlayer(string $name, callable $onCompletion, callable $onError) : void {
 		if ($this->closed) {
 			throw new \BadMethodCallException('API has been destructed');
-		}
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
 		}
 		$this->getPlayerMinutes(
 			$name,
@@ -108,8 +114,12 @@ final class TimeRanksApi {
 	}
 
 	/**
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
+	 * @param int $minutes a non negative integer
 	 * @param callable() : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
+	 * @throws \InvalidArgumentException if $minutes is negative
 	 */
 	public function setPlayerMinutes(string $name, int $minutes, callable $onCompletion, callable $onError) : void {
 		if ($this->closed) {
@@ -117,9 +127,6 @@ final class TimeRanksApi {
 		}
 		if ($minutes < 0) {
 			throw new \InvalidArgumentException('Minutes must be non negative');
-		}
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
 		}
 		$this->getPlayerMinutes(
 			$name,
@@ -144,18 +151,16 @@ final class TimeRanksApi {
 	}
 
 	/**
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
+	 * @param int $minutes a non negative integer
 	 * @param callable() : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
+	 * @throws \InvalidArgumentException if $minutes is negative
 	 */
 	public function incrementPlayerMinutes(string $name, int $minutes, callable $onCompletion, callable $onError) : void {
 		if ($this->closed) {
 			throw new \BadMethodCallException('API has been destructed');
-		}
-		if ($minutes < 0) {
-			throw new \InvalidArgumentException('Minutes must be non negative');
-		}
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
 		}
 		if ($minutes === 0) {
 			$onCompletion();

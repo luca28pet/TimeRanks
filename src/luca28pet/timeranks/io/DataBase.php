@@ -23,6 +23,8 @@ namespace luca28pet\timeranks\io;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
+use luca28pet\timeranks\util\InvalidPlayerNameException;
+use luca28pet\timeranks\util\Utils;
 
 /**
  * @internal
@@ -41,13 +43,13 @@ final class DataBase {
 	}
 
 	/**
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
 	 * @param callable(?int $minutes) : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
 	 */
 	public function getPlayerMinutes(string $name, callable $onCompletion, callable $onError) : void {
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
-		}
+		Utils::validatePlayerName($name);
 		$this->connector->executeSelect(
 			'timeranks.get_player',
 			['player' => mb_strtolower($name, 'UTF-8')],
@@ -64,13 +66,15 @@ final class DataBase {
 	}
 
 	/**
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
+	 * @param int $minutes a non negative integer
 	 * @param callable() : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
+	 * @throws \InvalidArgumentException if $minutes is negative
 	 */
 	public function setPlayerMinutes(string $name, int $minutes, callable $onCompletion, callable $onError) : void {
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
-		}
+		Utils::validatePlayerName($name);
 		if ($minutes < 0) {
 			throw new \InvalidArgumentException('Invalid Minutes');
 		}
@@ -89,13 +93,15 @@ final class DataBase {
 	}
 
 	/**
+	 * @param string $name UTF-8 encoded string with a maximum length of 16 characters
+	 * @param int $minutes a non negative integer
 	 * @param callable() : void $onCompletion
 	 * @param callable(SqlError $err) : void $onError
+	 * @throws InvalidPlayerNameException if $name does not satisfy preconditions
+	 * @throws \InvalidArgumentException if $minutes is negative
 	 */
 	public function incrementPlayerMinutes(string $name, int $minutes, callable $onCompletion, callable $onError) : void {
-		if (!mb_check_encoding($name, 'UTF-8')) {
-			throw new \InvalidArgumentException('Invalid name');
-		}
+		Utils::validatePlayerName($name);
 		if ($minutes < 0) {
 			throw new \InvalidArgumentException('Invalid Minutes');
 		}

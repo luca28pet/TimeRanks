@@ -29,6 +29,7 @@ use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
+use luca28pet\timeranks\util\Utils;
 
 /**
  * @internal
@@ -58,8 +59,8 @@ final class TimeRanksAdminCommand extends Command implements PluginOwned {
 				throw new InvalidCommandSyntaxException();
 			}
 			$target = $args[1];
-			if (!mb_check_encoding($target, 'UTF-8')) {
-				$sn->sendMessage('Invalid string');
+			if (!Utils::isValidPlayerName($target)) {
+				$sn->sendMessage('Invalid player name');
 				return;
 			}
 			$minString = $args[2];

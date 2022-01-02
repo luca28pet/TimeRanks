@@ -18,10 +18,11 @@
 
 declare(strict_types=1);
 
-namespace luca28pet\timeranks;
+namespace luca28pet\timeranks\util;
 
 use luca28pet\configparser\ConfigNode;
 use luca28pet\configparser\IncompatibleConfigNodeTypeException;
+use luca28pet\timeranks\Rank;
 
 /**
  * @internal

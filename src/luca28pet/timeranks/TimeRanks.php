@@ -30,6 +30,7 @@ use luca28pet\timeranks\command\RankCommand;
 use luca28pet\timeranks\lang\LangManager;
 use luca28pet\configparser\IncompatibleConfigNodeTypeException;
 use luca28pet\timeranks\command\TimeRanksAdminCommand;
+use luca28pet\timeranks\util\TimeRanksConfigNode;
 
 final class TimeRanks extends PluginBase {
 	private TimeRanksApi $api;

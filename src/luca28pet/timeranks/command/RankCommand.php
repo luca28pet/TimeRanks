@@ -29,6 +29,8 @@ use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
+use luca28pet\timeranks\InvalidPlayerNameException;
+use luca28pet\timeranks\util\Utils;
 
 /**
  * @internal
@@ -61,8 +63,8 @@ final class RankCommand extends Command implements PluginOwned {
 			$sn->sendMessage($this->langManager->getTranslation('command-no-perm', []));
 			return;
 		}
-		if (!mb_check_encoding($target, 'UTF-8')) {
-			$sn->sendMessage('Invalid string');
+		if (!Utils::isValidPlayerName($target)) {
+			$sn->sendMessage('Invalid player name');
 			return;
 		}
 		$cachedMinutes = $this->api->getPlayerMinutesCached($target);
