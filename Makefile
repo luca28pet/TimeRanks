@@ -1,22 +1,21 @@
 include config.mk
 
+SRC := plugin.yml $(shell find src resources -type f)
 PHAR := TimeRanks.phar
 
-all: $(PHAR)
+all: phpstan $(PHAR)
 
 phpstan:
 	$(PHP_PM) $(COMPOSER_PHAR) install
 	$(PHP_PM) vendor/bin/phpstan analyse
 
 clean:
-	rm -rf shaded $(PHAR)
+	rm -rf $(PHAR) shaded
 
-shade: clean phpstan
-	$(PHP_PM) $(COMPOSER_PHAR) install --no-dev
+$(PHAR): composer.lock $(SRC)
+	$(PHP_MP) $(COMPOSER_PHAR) install --no-dev
 	$(PHP_PM) $(SHADER_SCRIPT)
-
-$(PHAR): shade
 	$(PHP_PM) $(DEVTOOLS_PHAR) --make shaded --out $(PHAR)
 
-.PHONY: phpstan shade clean all
+.PHONY: phpstan clean all
 
