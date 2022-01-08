@@ -13,7 +13,7 @@ clean:
 	rm -rf $(PHAR) shaded
 
 $(PHAR): composer.lock $(SRC)
-	$(PHP_MP) $(COMPOSER_PHAR) install --no-dev
+	$(PHP_PM) $(COMPOSER_PHAR) install --no-dev
 	$(PHP_PM) $(SHADER_SCRIPT)
 	$(PHP_PM) $(DEVTOOLS_PHAR) --make shaded --out $(PHAR)
 
